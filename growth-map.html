@@ -210,7 +210,7 @@ const LEVELS={
    {n:'Decimals & money',       wm:12, mul2:1, dec:1,  s:3, bar:'dec',  patt:'geo', chal:3},
    {n:'Multiplication mastery', wm:12, longmul:1, frac:1,   s:3, bar:'frac', patt:'tri',  chal:3},
    {n:'Ratio & proportion',     wm:12, longmul:1, ratio:1,  s:3, bar:'ratio',patt:'seq',  chal:3},
-   {n:'Percentages',            wm:12, longmul:1, pct:1,    s:3, bar:'pct',  patt:'seq',  chal:4},
+   {n:'Percentages',            wm:12, longmul:1, pct:1,    s:3, bar:'pct',  patt:'seq',  chal:4, barChal:5},
    {n:'Pre-algebra',            wm:12, longmul:1, algebra:1,s:3, bar:'ratio',patt:'seq',  chal:4},
    {n:'Algebra & geometry',     wm:12, longmul:1, algebra:2, geom:1,   s:3, bar:'pct',  patt:'quad', chal:5},
    {n:'Competition heuristics', wm:12, longmul:1, algebra:3, geom:1, comp:1, s:3, bar:'ratio3', patt:'quad', chal:5},
@@ -221,20 +221,25 @@ const LEVELS={
    {n:'Inference',            vt:'easy',  pt:2, gt:'easy', gc:4, write:'para'},
    {n:'Vocab in context',     vt:'mid',   pt:2, gt:'easy', gc:5, write:'describe'},
    {n:'Opinion & why',        vt:'mid',   pt:2, gt:'hard', gc:6, write:'opinion'},
-   {n:'Multi-paragraph',      vt:'mid',   pt:3, gt:'hard', gc:4, write:'multi'},
-   {n:'Persuasive writing',   vt:'hard',  pt:3, gt:'hard', gc:5, write:'persuade'},
-   {n:'Structure & argument', vt:'hard',  pt:3, gt:'hard', gc:6, write:'argument'},
-   {n:'Essay basics',         vt:'hard',  pt:3, gt:'hard', gc:7, write:'essay'},
-   {n:'Rhetoric & technique', vt:'harder',pt:3, gt:'hard', gc:8, write:'rhetoric', tech:1},
-   {n:'Debate — both sides',  vt:'harder',pt:3, gt:'hard', gc:9, write:'debate',   tech:1},
-   {n:'Personal voice',       vt:'harder',pt:3, gt:'hard', gc:10, write:'personal', tech:1},
-   {n:'Interview reasoning',  vt:'harder',pt:3, gt:'hard', gc:11, write:'interview',tech:1}
+   {n:'Multi-paragraph',      vt:'mid',   pt:3, gt:'hard', gc:7, write:'multi'},
+   {n:'Persuasive writing',   vt:'hard',  pt:3, gt:'hard', gc:8, write:'persuade'},
+   {n:'Structure & argument', vt:'hard',  pt:3, gt:'hard', gc:9, write:'argument'},
+   {n:'Essay basics',         vt:'hard',  pt:3, gt:'hard', gc:10, write:'essay'},
+   {n:'Rhetoric & technique', vt:'harder',pt:3, gt:'hard', gc:11, write:'rhetoric', tech:1},
+   // pt:4 on rungs 10-12 — reading was pinned at tier 3 from rung 5 all the way to rung 12 while
+   // vt/gt/gc kept climbing, so READING flatlined for 8 straight rungs even though writing/grammar
+   // never did. The tier-4 PASSAGES bank already existed (4 passages) but was only ever reachable
+   // via intensifyRung's boost past rung 12 — promoting it into these 3 hand-authored rungs makes
+   // reading escalate alongside writing on the ladder itself, not just past its ceiling.
+   {n:'Debate — both sides',  vt:'harder',pt:4, gt:'hard', gc:12, write:'debate',   tech:1},
+   {n:'Personal voice',       vt:'harder',pt:4, gt:'hard', gc:13, write:'personal', tech:1},
+   {n:'Interview reasoning',  vt:'harder',pt:4, gt:'hard', gc:14, write:'interview',tech:1}
   ]
  },
  mirayah:{
   maths:[
-   {n:'Counting play',      addMax:10, bonds:10, count:[2],        story:0, shapes:1},
-   {n:'Bonds to 10',        addMax:16, subMax:5, bonds:10, count:[5],      story:0, shapes:1, bondsReps:9, bondsForm:1},
+   {n:'Counting play',      addMax:10, subMax:5, bonds:10, count:[2],        story:1, shapes:1},
+   {n:'Bonds to 10',        addMax:16, subMax:15, bonds:10, count:[5],      story:0, shapes:1, bondsReps:9, bondsForm:1},
    {n:'Add & take to 20',   addMax:20, subMax:20, bonds:20, count:[2,5],     story:1, shapes:1},
    {n:'Teen numbers',       addMax:20, subMax:20, bonds:20, count:[2,5,10],  story:1, shapes:2, place:1, bondsForm:1, bondsReps:8},
    {n:'Within 100',         addMax:80, subMax:80, bonds:50, count:[5,10],    story:1, shapes:2, place:1},
@@ -245,14 +250,14 @@ const LEVELS={
    {n:'Bridge to big-girl', addMax:99, subMax:99, bonds:100, count:[3,4,6],   story:2, shapes:0, mul:1, mulMax:90, twostep:2, regroup:3, bondsForm:2, bondsReps:9}
   ],
   english:[
-   {n:'Sight words',      wtier:'a', mini:0, write:'word'},
-   {n:'Rhyming words',    wtier:'a', mini:0, write:'word',  rhyme:1},
+   {n:'Sight words',      wtier:'b', mini:0, write:'word'},
+   {n:'Rhyming words',    wtier:'b', mini:0, write:'word',  rhyme:1},
    {n:'First sentences',  wtier:'a', mini:1, write:'sent'},
-   {n:'Short comprehension', wtier:'b', mini:1, write:'sent'},
+   {n:'Short comprehension', wtier:'b', mini:1, write:'sent', qs:1},
    {n:'Retell it',        wtier:'b', mini:1, write:'retell', qs:1},
-   {n:'Two details',      wtier:'b', mini:2, write:'two'},
-   {n:'Mini paragraph',   wtier:'c', mini:2, write:'para3'},
-   {n:'Because & why',    wtier:'c', mini:3, write:'because'},
+   {n:'Two details',      wtier:'b', mini:2, write:'two', qs:1},
+   {n:'Mini paragraph',   wtier:'c', mini:2, write:'para3', qs:1},
+   {n:'Because & why',    wtier:'c', mini:3, write:'because', qs:1},
    {n:'Read & answer',    wtier:'c', mini:3, write:'order3', qs:1},
    {n:'Bridge to big-girl', wtier:'d', mini:3, write:'para3', qs:1}
   ]
@@ -421,12 +426,14 @@ const SCI_MIRAYAH=[
   facts:[['Is a dog living or non-living?','living'],['Is a rock living or non-living?','non-living'],['Living things need water and…?','food and air'],['Name one living thing in your home.','e.g. a plant, a pet, a person']],
   sc:[['A teddy looks like a bear. Is it alive? Why not?','not alive — it can’t eat, grow or move by itself'],['A toy car can zoom around on its own with batteries inside. Is it alive?','no — it doesn’t eat, drink or grow, it just uses batteries'],['A tree just stands still and never walks around like a dog. Is it alive?','yes — it is alive; it grows, and needs water, air and sunlight, it just doesn’t move from place to place']],
   method:[['Which will grow — a stone or a seed? Guess and say why.','the seed — it is living'],['Guess: does a plant need food from a plate to stay alive, like you do, or does it make its own food?','a plant makes its own food using water, air and sunlight — it doesn’t eat from a plate'],['Look outside or around your room: point to one living thing and one non-living thing. How do you know which is which?','living things grow and need food/water/air; non-living things do not']],
-  lab:'Point to five living and five non-living things at home.'},
+  lab:'Point to five living and five non-living things at home.',
+  sort:{items:['a dog','a rock','a tree','a toy car','a butterfly','a cloud'],ask:'Sort these into two groups: LIVING and NON-LIVING. Then pick the trickiest one to sort, and explain why it was tricky.',a:'living: dog, tree, butterfly — non-living: rock, toy car, cloud; trickiest is open (e.g. the tree, because it doesn’t move like a dog does)'}},
  {n:'My five senses', vocab:[['senses','how we notice the world'],['taste','the sense on our tongue']],
   facts:[['We see with our…?','eyes'],['We hear with our…?','ears'],['We smell with our…?','nose'],['Which sense tells us food is sweet?','taste (tongue)']],
   sc:[['Eyes closed — how could you tell an apple from an orange?','by smell, touch or taste'],['You cover your ears tightly. Can you still tell if music is playing nearby?','much harder — hearing is the sense that tells us about sounds'],['Ice feels cold and a blanket feels soft. Which sense told you that?','touch']],
   method:[['Guess: can you name a fruit with your eyes closed, just by smell?','yes, often you can'],['Guess: with your eyes closed, could you tell warm water from cold water? Which sense would help you?','yes — by touch'],['Close your eyes while a friend claps, taps or whistles. Can you guess the sound? Which sense are you using?','yes, often — you are using hearing']],
-  lab:'Feely-bag game: guess objects using touch only.'},
+  lab:'Feely-bag game: guess objects using touch only.',
+  sort:{items:['a loud drum','a soft blanket','a sour lemon','a bright light','a smelly flower'],ask:'Match each thing above to the sense you would mainly use to notice it (hearing / touch / taste / sight / smell). Then pick one that could ALSO be noticed with a second sense, and explain how.',a:'drum=hearing, blanket=touch, lemon=taste, light=sight, flower=smell; second-sense answer is open (e.g. a bright light can also be felt as warmth = touch)'}},
  {n:'Parts of a plant', vocab:[['root','the part under the soil'],['leaf','the flat green part']],
   facts:[['The part under the soil is the…?','roots'],['The green flat part that catches sunlight is the…?','leaf'],['The colourful part that makes seeds is the…?','flower'],['Plants need water and…?','sunlight'],['Which part of a mango plant grows into the mango fruit?','the flower']],
   sc:[['A plant with no water for days goes droopy. Why?','it needs water to stay firm and healthy'],['A plant kept in a dark cupboard for a week turns pale and floppy. Why?','it needs sunlight — its leaves use light to make food for the plant'],['A mango plant’s flower turns into a juicy mango fruit. Which plant part started the fruit growing?','the flower']],
@@ -611,7 +618,13 @@ function m_words(L){const B=[],a=[];let idx=0;const num=()=>P(NAMES);const fmt=p
  else{const big=L.mul2||L.longmul,c=big?R(15,45):R(6,19),cnt=big?R(4,8):R(3,6),tot=c*cnt,pay=Math.ceil((tot+R(5,40))/10)*10;B.push((++idx)+')  Pens cost ₹'+c+' each. '+num()+' buys '+cnt+' and pays with a ₹'+pay+' note. How much change?');a.push('₹'+(pay-tot));}
  return{items:B,a};}
 
-function m_bar(L){const t=L.bar||'cmp';const fmtB=p=>Math.floor(p/100)+'.'+String(p%100).padStart(2,'0');const ch=L.chal||1;
+function m_bar(L){const t=L.bar||'cmp';const fmtB=p=>Math.floor(p/100)+'.'+String(p%100).padStart(2,'0');
+ // barChal — lets one rung's bar-model difficulty be raised independently of L.chal (which also
+ // drives the ★ Challenge pool, m_mistake's bank, m_geometry's bo offset, etc.). Without it, the
+ // "Percentages" rung (chal:4) drew the EASIEST percent tier ([10,20,50]) since m_bar's pct branch
+ // gates harder pools on ch>=5, while later rungs that merely reuse bar:'pct' incidentally (rung 10
+ // chal:5, rung 12 chal:6) drew harder percentages than the rung actually teaching the topic.
+ const ch=L.barChal||L.chal||1;
  if(t==='dec'){const aP=R(3,18)*5,bP=R(3,18)*5,totP=aP+bP;return{h:'C. Bar-model challenge — draw the bars',items:[P(NAMES)+' spent ₹'+fmtB(totP)+' in total on a toy and a comic. The toy cost ₹'+fmtB(aP)+'. Draw a bar split into two parts to find how much the comic cost.'],write:3,a:'C: ₹'+fmtB(bP)};}
  if(t==='frac'){const dPool=ch>=3?[4,5,6,8,9]:[3,4,5],d=P(dPool),k=R(3,4+ch),whole=d*k,num=R(1,d-1),got=num*k;return{h:'C. Bar-model challenge — draw the bars',items:[num+'/'+d+' of a number is '+got+'. Draw a bar in '+d+' equal parts to find the whole number.'],write:3,a:'C: whole = '+whole};}
  if(t==='ratio'){const k=R(2,3+ch),xyPool=ch>=4?[[2,5],[3,7],[4,9],[5,8]]:[[2,3],[2,5],[3,4]],xy=P(xyPool),x=xy[0],y=xy[1],tot=(x+y)*k;return{h:'C. Bar-model challenge — draw the bars',items:['Two teams share '+tot+' points in the ratio '+x+':'+y+'. Draw '+(x+y)+' equal boxes to find each team’s score.'],write:3,a:'C: '+(x*k)+' and '+(y*k)};}
@@ -676,9 +689,13 @@ function m_mistake(L){const easy=[
  const m=P(bank);return{h:'E. Find the mistake (be the teacher)',items:[m[0]],write:2,a:'E: '+m[1]};}
 
 const CHAL={
- 1:[['⭐ There are 4 red and 3 blue marbles in a bag. How many marbles altogether? Draw them.','7'],
-    ['⭐ A ladybird has 6 legs. How many legs do 3 ladybirds have?','18'],
-    ['⭐ Count by 2s from 0. What is the 5th number you say?','10']],
+ // CHAL[1] (rungs 1-2's ★) was Grade-1 recall (single-step add/multiply/count-on) on a P3 ladder —
+ // replaced with genuinely non-routine problems (a two-condition find-the-numbers puzzle, a
+ // combinatorics count, a two-step reverse-reasoning problem) that need trial/reasoning, not a
+ // single known operation, while staying within a P3 child's reach.
+ 1:[['⭐ I am thinking of two numbers. They add up to 11 and their difference is 3. What are the two numbers?','7 and 4'],
+    ['⭐ Using the digits 1, 2 and 3 once each, how many different 3-digit numbers can you make?','6 (123, 132, 213, 231, 312, 321)'],
+    ['⭐ A pencil and a rubber together cost ₹12. The rubber costs ₹4. How much would 2 pencils and 1 rubber cost?','₹20 (pencil = ₹8, so 2×8 + 4 = 20)']],
  2:[['⭐ 5 friends each shake hands once with every other friend. How many handshakes in total?','10  (5 × 4 ÷ 2)'],
     ['⭐ Two numbers add up to 12 and multiply to 35. What are they?','5 and 7'],
     ['⭐ A clock shows 3 o’clock. What is the smaller angle between the hands?','90°']],
@@ -696,7 +713,16 @@ const CHAL={
     ['⭐ The angles of a triangle are in the ratio 1:2:3. Find each angle.','30°, 60°, 90°']],
  comp:[['⭐ A number between 30 and 50 leaves remainder 2 when divided by 5, and remainder 1 when divided by 4. What is the number?','37'],
     ['⭐ The sum of 9 consecutive whole numbers is 108. What is the largest of the nine numbers?','16  (numbers are 8–16)'],
-    ['⭐ A student was asked to add 7 to a number, then multiply the result by 3. Instead, they multiplied the number by 3 first, then added 7 — and got 46. What should the correct answer have been?','60  (the number was 13; correct: (13+7)×3=60)']]
+    ['⭐ A student was asked to add 7 to a number, then multiply the result by 3. Instead, they multiplied the number by 3 first, then added 7 — and got 46. What should the correct answer have been?','60  (the number was 13; correct: (13+7)×3=60)']],
+ // spike — Independent Study only (gated on L.boost in ws_maths_sarah). intensifyRung pins chal to
+ // 6 forever past rung 12 (correctly — CHAL[7] doesn't exist), but with nothing downstream reading
+ // that, every further "level up" just reshuffled the same CHAL[6]+CHAL.comp 6-item pool: bigger
+ // numbers elsewhere on the sheet, but the SAME problem TYPES forever. spike is deliberately a
+ // different flavour of reasoning (3D spatial counting, working backwards, permutations) rather
+ // than a bigger version of an existing arithmetic/word-problem type.
+ spike:[['⭐ A cube is painted red on all six faces, then cut into 27 identical smaller cubes (3×3×3). How many of the small cubes have paint on exactly 2 faces?','12 (the edge cubes — not the 8 corners with 3 faces painted, not the 6 face-centres with 1)'],
+    ['⭐ I doubled a number, then added 6, and got 26. What number did I start with?','10'],
+    ['⭐ A code uses 2 different letters chosen from A, B, C, D, and the order matters (AB is different from BA). How many different 2-letter codes are possible?','12 (4 × 3)']]
 };
 
 function m_algebra(L){const B=[],a=[];const bo=L.boost||0;
@@ -771,6 +797,14 @@ function ws_maths_sarah(li){const L=LEVELS.sarah.maths[li];let blocks=[],ans=[];
  if(L.ratio&&CHAL.comp)chalPool=chalPool.concat(CHAL.comp);
  if(L.chal===4&&L.algebra&&CHAL[5])chalPool=chalPool.concat(CHAL[5]);
  if(L.comp&&CHAL.comp)chalPool=chalPool.concat(CHAL.comp);
+ // Independent Study ★ rotation — intensifyRung correctly pins L.chal at 6 forever past rung 12
+ // (CHAL[7] doesn't exist), but nothing downstream used to react to that: every further "level up"
+ // just reshuffled the same CHAL[6]+CHAL.comp 6-item pool — bigger numbers everywhere ELSE on the
+ // sheet, but the ★ Challenge's problem TYPE never actually changed. Fix: on even Independent Study
+ // tiers, swap in CHAL.spike (spatial/working-backwards/permutations — a different kind of reasoning,
+ // not a bigger arithmetic one) instead of the same pinned pool, so consecutive level-ups alternate
+ // between two genuinely different problem-type sets rather than reshuffling one unchanging set.
+ if(L.boost&&L.boost%2===0&&CHAL.spike)chalPool=CHAL.spike.concat(CHAL.comp||[]);
  const ch=P(chalPool);blocks.push({h:'★ Challenge — think hard, take your time'+(L.comp?' (competition-style)':''),items:[ch[0]],write:4});ans.push('★: '+ch[1]);
  if(L.proof){blocks.push({h:'★★ Prove it',items:['Explain, in your own words and with an example, WHY the challenge answer above must be true.'],write:4});ans.push('★★: reward a clear reason + a worked example.');}
  return{title:'Maths Worksheet — Sarah (8)',sub:'Level '+(li+1)+'/'+LEVELS.sarah.maths.length+' · '+L.n,level:mLevelTag(li),blocks,ans};}
@@ -938,9 +972,9 @@ function ws_maths_mirayah(li){const L=LEVELS.mirayah.maths[li];let blocks=[],ans
     else{start=R(20,50);total=R(start+10,Math.max(start+11,addCap));}
     blocks.push({h:'G. Story sum',items:[start+' birds were sitting on a tree. A few more joined. Now there are '+total+' birds. How many birds joined?  ____'],write:1});ans.push('G: '+(total-start));}
   }else{
-   const kind=R(0,1),addCap=L.addMax||20,subCap=L.subMax||20;
-   if(kind===0){const a=R(3,Math.max(9,Math.floor(addCap*0.45))),b=R(2,Math.max(6,Math.floor(addCap*0.3)));blocks.push({h:'G. Story sum',items:[P(NAMES)+' has '+a+' balloons and gets '+b+' more. How many now?  ____'],write:1});ans.push('G: '+(a+b));}
-   else{const a=R(Math.max(6,Math.floor(subCap*0.3)),Math.max(12,Math.floor(subCap*0.6))),b=R(1,Math.max(5,Math.floor(subCap*0.25)));blocks.push({h:'G. Story sum',items:[P(NAMES)+' had '+a+' sweets and ate '+b+'. How many left?  ____'],write:1});ans.push('G: '+(a-b));}
+   const kind=R(0,1),addCap=L.addMax||20,subCap=L.subMax||20,pic=li===0?' (draw a picture to help!)':'';
+   if(kind===0){const a=R(3,Math.max(9,Math.floor(addCap*0.45))),b=R(2,Math.max(6,Math.floor(addCap*0.3)));blocks.push({h:'G. Story sum',items:[P(NAMES)+' has '+a+' balloons and gets '+b+' more. How many now?  ____'+pic],write:1});ans.push('G: '+(a+b));}
+   else{const a=R(Math.max(6,Math.floor(subCap*0.3)),Math.max(12,Math.floor(subCap*0.6))),b=R(1,Math.max(5,Math.floor(subCap*0.25)));blocks.push({h:'G. Story sum',items:[P(NAMES)+' had '+a+' sweets and ate '+b+'. How many left?  ____'+pic],write:1});ans.push('G: '+(a-b));}
   }
  }
  // H two-step — twostep:1 (rung9) was a magnitude-dead flag: it was read but a/b/c were hardcoded to
@@ -972,6 +1006,21 @@ function ws_maths_mirayah(li){const L=LEVELS.mirayah.maths[li];let blocks=[],ans
  // and MOE P1 syllabus 1.2 ("make a group of ten and count on ... to tell the number") are the model.
  if(L.place){const cap=Math.max(19,Math.min(99,L.addMax||19)),n=R(11,cap),t=Math.floor(n/10),o=n%10;
   blocks.push({h:'I. Tens & ones',items:[n+' = ____ tens and ____ ones']});ans.push('I: '+t+' tens and '+o+' ones');}
+ // J reasoning — Beast-Academy-Grade-2-style non-routine thinking, on EVERY rung (there was no
+ // thinking block at all before this — every block above is routine compute-the-answer). Scales
+ // gently off L.bonds/L.addMax so the numbers grow with the rung, same discipline as blocks B/C/G.
+ {const cap=L.bonds||L.addMax||10,kind=R(0,2);
+  if(kind===0){const step=P(L.count||[2]),start=R(1,3)*step,seq=[start,start+step,start+step*2];
+   blocks.push({h:'J. Pattern puzzle',items:[seq.join(', ')+', ____, ____   — what is the rule, and what are the next two numbers?']});
+   ans.push('J: rule = +'+step+'; '+(start+step*3)+', '+(start+step*4));
+  }else if(kind===1){const x=R(2,Math.max(3,Math.floor(cap*0.4))),y=R(2,Math.max(3,Math.floor(cap*0.4))),wrong=x+y+P([1,-1,2,-2]);
+   blocks.push({h:'J. Be the teacher — find the mistake',items:[P(NAMES)+' wrote:  '+x+' + '+y+' = '+wrong+'.  Is this right? If not, what is the correct answer, and what mistake do you think was made?']});
+   ans.push('J: correct answer = '+(x+y)+' (accept any sensible explanation of the mistake)');
+  }else{const a=R(2,Math.max(3,Math.floor(cap*0.5))),b=R(2,Math.max(3,Math.floor(cap*0.5)));
+   blocks.push({h:'J. Draw & explain',items:['Draw a picture to show '+a+' + '+b+'. Then explain in one sentence how your picture shows the answer.']});
+   ans.push('J: '+(a+b)+' (accept any picture/explanation that correctly shows this)');
+  }
+ }
  return{title:'Maths Worksheet — Mirayah (6)',sub:'Level '+(li+1)+'/'+LEVELS.mirayah.maths.length+' · '+L.n,level:'Age 6 · number sense — concrete & playful (joy first)',blocks,ans};}
 
 /* ---------- ENGLISH · content banks ---------- */
@@ -1157,8 +1206,14 @@ const WRITE_TASKS={
 // landed at A5+C6+D5+F2=18 too: an exact coincidental collision at the rung8→rung9 seam, so the 80%
 // mastery bar was identical there even though rung 9 introduces a whole new taught skill (rhetorical
 // technique) and shifts vocab tier hard→harder. Re-fixed by continuing the gc climb from rung 8's gc=7
-// instead of restarting: gc now runs 8→9→10→11 across rungs 9-12 (well within GRAMMAR.hard's 20-item
-// bank), so MTOTAL keeps climbing 18→21→22→23→24 instead of plateauing at the rung8/9 boundary.
+// instead of restarting: gc ran 8→9→10→11 across rungs 9-12 (well within GRAMMAR.hard's 20-item
+// bank), so MTOTAL kept climbing 18→21→22→23→24 instead of plateauing at the rung8/9 boundary.
+// SUPERSEDED: rung 5 was later found to still carry its original gc:4 (dropping MTOTAL from rung4's
+// 16 back to 15 — the same plateau/regression bug, just one seam earlier and missed by every prior
+// pass). Fixed by continuing the gc climb from rung4's gc:6 through rungs 5-8 (7,8,9,10 instead of
+// 4,5,6,7), which pushed rung8's gc — and this seam's numbers — up in turn: gc now runs 11→12→13→14
+// across rungs 9-12 (still within GRAMMAR.hard's 20-item bank) so MTOTAL never plateaus anywhere
+// rung1→rung12 (see growth-map-exhaustive-audit finding, english/sarah rung4→rung5 Block D).
 const RHETORIC=[
  {name:'Rhetorical question',explain:'a question asked to make a point, not to get a real answer',example:'“Isn’t it obvious that reading makes you smarter?”'},
  {name:'Rule of three',explain:'listing three things together to make an idea feel complete and powerful',example:'“Fast, fun and unforgettable.”'},
@@ -1281,8 +1336,44 @@ const MINISTORY=[
  {t:'A little duckling named Coco could not find her mother. She waddled across the farm, past the cow, the horse and the sheep. At last she heard “quack, quack!” — it was her mother, waiting by the pond!',q:['Q) Who was Coco looking for?','Q) Name two animals Coco passed on the farm.','Q) Where did Coco find her mother?'],a:['her mother','cow, horse, sheep (any two)','by the pond'],x:'Q) How did Coco know she had finally found her mother?',xa:'she heard the quack, quack sound — a duck sound, not a farm-animal sound'},
  {t:'A little fly forgot his own name! He asked the ant, then the tree, then the cow, then the grass, but nobody knew it. At last he asked a leaf. Just then the wind blew, and the leaf began to fly. Seeing this, the fly suddenly remembered — “My name is Fly!”',q:['Q) What did the fly forget?','Q) Name one thing the fly asked.','Q) How did the fly finally remember his name?'],a:['his own name','the ant / the tree / the cow / the grass (any one)','he saw the leaf fly in the wind, and that reminded him he is a Fly'],x:'Q) Why do you think seeing the leaf fly helped the fly remember his name?',xa:'watching the leaf “fly” reminded him that flying is what HE does — because he is a fly'},
  {t:'Anju and Farida ate groundnuts and juice under a tree, then threw the wrapper and bottle on the ground. A monkey in the tree finished his banana and threw the peel straight into a dustbin nearby! Farida and Anju felt ashamed, picked up their rubbish, and threw it in the dustbin too.',q:['Q) What did the monkey do with the banana peel?','Q) How did Anju and Farida feel when they saw this?','Q) What did they do next?'],a:['threw it into the dustbin','ashamed','picked up their rubbish and threw it in the dustbin'],x:'Q) What lesson does this story teach us?',xa:'always throw rubbish in the dustbin and keep places clean — even a monkey knew better!'},
- {t:'A black crow wanted to be beautiful. He found peacock feathers and stuck them on his wings and head. “Now I am beautiful!” he danced. But the other crows laughed. “What a fool — you are beautiful in black. We love you for what you are,” they said.',q:['Q) What did the crow stick onto his wings and head?','Q) What did the other crows say to him?','Q) Why did the other crows laugh?'],a:['peacock feathers','he is beautiful in black and they love him for what he is','because he looked silly trying to be someone he was not'],x:'Q) What is this story really trying to teach us?',xa:'be happy being yourself — you don’t need to change to be loved (accept any reasonable “be yourself” answer)'}
+ {t:'A black crow wanted to be beautiful. He found peacock feathers and stuck them on his wings and head. “Now I am beautiful!” he danced. But the other crows laughed. “What a fool — you are beautiful in black. We love you for what you are,” they said.',q:['Q) What did the crow stick onto his wings and head?','Q) What did the other crows say to him?','Q) Why did the other crows laugh?'],a:['peacock feathers','he is beautiful in black and they love him for what he is','because he looked silly trying to be someone he was not'],x:'Q) What is this story really trying to teach us?',xa:'be happy being yourself — you don’t need to change to be loved (accept any reasonable “be yourself” answer)'},
+ // 13-18: added so post-rung-10 Independent Study isn't reshuffling the same dozen stories —
+ // original, honestly not NCERT-sourced, same age-6 register as items 1-9.
+ {t:'Leo could not find his shoe anywhere. He looked under the bed, behind the door, and inside the toy box. At last he found it — his little sister had been using it as a boat for her toy duck in the bathtub!',q:['Q) Where did Leo look for his shoe first?','Q) Who had taken the shoe?'],a:['under the bed','his little sister'],x:'Q) Why do you think Leo’s sister used the shoe as a boat?',xa:'she was playing pretend and thought the shoe looked like a little boat for her duck'},
+ {t:'Every day the old dog Buster walked to the gate to wait for the school bus. One rainy day the children forgot their umbrellas, so Buster walked beside them all the way home, getting soaked so they could stay a little drier under one shared umbrella.',q:['Q) What did Buster do every day?','Q) What did Buster do on the rainy day?'],a:['walked to the gate to wait for the bus','walked the children home so they stayed drier, getting wet himself'],x:'Q) What does this story tell you about Buster?',xa:'he was loyal and caring — he put the children’s comfort ahead of his own'},
+ {t:'Two brothers, Ravi and Dev, found one mango on the ground. Both wanted it, and they almost began to argue. Then Ravi had an idea: he cut it carefully in half so they could share it equally, and they ate it together on the swing.',q:['Q) What did Ravi and Dev find?','Q) What did Ravi do to solve the problem?'],a:['one mango','cut it in half so they could share'],x:'Q) Why was sharing a better choice than arguing?',xa:'both boys got to enjoy the mango and stayed friends, instead of losing it while fighting over it'},
+ {t:'A little girl named Wren was scared of the dark and slept with her light on every night. One evening the power went out. Her grandmother lit a candle and told her a story about the stars, and by the end Wren was so busy imagining the stars that she forgot to be scared at all.',q:['Q) What was Wren scared of?','Q) What happened one evening?'],a:['the dark','the power went out'],x:'Q) Why did Wren stop feeling scared while her grandmother told the story?',xa:'she became so interested in the story that her mind was busy with something else instead of her fear'},
+ {t:'The class hamster, Nibbles, escaped from his cage during break time. Everyone searched everywhere, until quiet little Amara noticed a tiny rustling sound behind the bookshelf. She sat very still and waited, and soon Nibbles crept out on his own, right into her waiting hands.',q:['Q) Who escaped from his cage?','Q) Who found Nibbles?'],a:['Nibbles the hamster','Amara'],x:'Q) Why did Amara wait quietly instead of chasing after the sound right away?',xa:'staying still and quiet meant Nibbles felt safe enough to come out on his own, instead of being frightened further away'},
+ {t:'Sanya wanted to learn to ride her bicycle without training wheels, but she fell three times in one afternoon and wanted to give up. Her father did not tell her to try again. Instead he just held the seat one more time and said, “I’ve got you — pedal.” On the fourth try, she rode all the way to the tree by herself.',q:['Q) How many times did Sanya fall?','Q) What did her father say before the fourth try?'],a:['three','“I’ve got you — pedal.”'],x:'Q) Why do you think Sanya was able to ride on the fourth try?',xa:'her father’s support gave her the confidence to try once more instead of giving up'}
 ];
+// MINISTORY_MED — new graded longer-passage bank (2-3 paragraphs), rungs 6-9 ("Two details" through
+// "Read & answer"). Fixes the #1 ladder-plateau bug: MINISTORY (above) is single-paragraph at every
+// rung it's used on, so passage LENGTH never grew across the ladder, only the cloze word tier (SIGHT)
+// did. First 3 = concrete recall (matches mini:2's existing concrete-pool intent), last 3 = a moral/
+// trait-inference twist (matches mini:3's existing fable-pool intent) — same q/a/x/xa shape as
+// MINISTORY so Block D's existing rendering and qs-gated harder question need no change. Original,
+// honestly not NCERT-sourced.
+const MINISTORY_MED=[
+ {t:'Zoe flew her yellow kite in the big park every Sunday. One windy day, the string snapped and the kite raced up into the clouds. Zoe ran after it, but it was too fast and too high, and she sat on the grass feeling sad.<br><br>Just then, an older boy named Sam came running with his own kite stuck in a tree. He climbed up carefully and brought down both kites — his own, and Zoe’s yellow one, which had landed on the very same branch. Zoe said a big thank you, and from that day Sam and Zoe flew their kites together every Sunday.',q:['Q) What colour was Zoe’s kite?','Q) Why did Zoe feel sad?','Q) Where did Zoe’s kite end up?'],a:['yellow','her kite flew away in the wind','stuck in a tree, on the same branch as Sam’s kite'],x:'Q) Why do you think Zoe and Sam became kite-flying friends after that day?',xa:'because Sam helped her get her kite back, and they found they enjoyed the same thing'},
+ {t:'Arjun wanted a puppy for his birthday, but his mother said their flat was too small for a big dog. On his birthday morning, he found a small box on the table with holes in the lid. Inside sat a tiny grey kitten, mewing softly.<br><br>Arjun was not sure at first — he had wanted a puppy, not a kitten. But the kitten climbed straight onto his lap and fell asleep, and Arjun found he did not mind at all. He named her Misty, and by the end of the week he could not imagine wanting any other pet.',q:['Q) What did Arjun want for his birthday?','Q) What did his mother say about a big dog?','Q) What did Arjun find in the box?'],a:['a puppy','their flat was too small for one','a tiny grey kitten'],x:'Q) Why do you think Arjun changed his mind about wanting a puppy?',xa:'the kitten was sweet and friendly and made him feel happy, so he grew to love her instead'},
+ {t:'Priya had planned a picnic in the garden all week, but on Saturday morning the sky turned grey and rain began to fall. She felt her whole plan was ruined and almost cried.<br><br>Her father had an idea. He spread a blanket on the living room floor, packed the same sandwiches and juice, and turned off the lights except for a torch. “An indoor picnic under the stars,” he said, pointing the torch at the ceiling. Priya laughed so hard she forgot all about the rain outside.',q:['Q) What had Priya planned all week?','Q) What happened to the weather on Saturday?','Q) Where did Priya’s father set up the new picnic?'],a:['a picnic in the garden','it turned grey and started raining','on the living room floor'],x:'Q) Why did Priya’s father’s idea make her feel better?',xa:'he found a fun new way to still have the picnic, so she did not miss out even though it rained'},
+ {t:'A tiny ant found a huge crumb of bread near the kitchen door. It was far too heavy for one ant to carry alone, so she ran to fetch her friends. Soon six ants stood around the crumb, each one small but strong together.<br><br>Working as a team, they lifted the crumb bit by bit and carried it all the way back to their nest. That evening, every ant in the colony had a share of bread — because one ant knew that asking for help was not a weakness, but a very clever idea.',q:['Q) What did the ant find near the kitchen door?','Q) Why did the ant fetch her friends?','Q) How many ants carried the crumb in total?'],a:['a huge crumb of bread','it was too heavy to carry alone','six'],x:'Q) What lesson does this story teach us about asking for help?',xa:'asking for help is smart, not weak — working together can get a job done that one person alone cannot'},
+ {t:'A quick hare laughed at a slow tortoise and challenged her to a race across the field. The hare shot off like an arrow, then stopped halfway to nap under a shady tree, sure he had plenty of time to win.<br><br>The tortoise never stopped. Step by slow step, she plodded past the sleeping hare and crossed the finish line first. The hare woke up just in time to see her win — and learned that going steadily is often better than rushing and stopping.',q:['Q) Who did the hare challenge to a race?','Q) What did the hare do halfway through the race?','Q) Who won the race?'],a:['a tortoise','stopped to nap under a tree','the tortoise'],x:'Q) What lesson did the hare learn by the end of the story?',xa:'going slowly and steadily without stopping can win, even against someone faster'},
+ {t:'On a rainy walk home, Kabir noticed a classmate, Wen, standing under a tree with no umbrella, waiting for the rain to stop. Kabir only had one small umbrella, just big enough for himself.<br><br>He walked over anyway and held it over both of their heads, even though his own shoulder got a little wet. Wen smiled and said it was the kindest thing anyone had done for her all week. Kabir decided that a dry shoulder was a small price for a happy friend.',q:['Q) Where was Wen standing?','Q) What did Kabir do with his umbrella?','Q) What got a little wet?'],a:['under a tree','held it over both of them / shared it with Wen','Kabir’s shoulder'],x:'Q) Why did Kabir decide sharing was worth getting a little wet?',xa:'because making his friend happy mattered more to him than staying completely dry'}
+];
+// MINISTORY_LONG — new graded real multi-paragraph story bank (3 paragraphs, a genuine story arc),
+// rung 10 ("Bridge to big-girl") and every Independent Study rung beyond it. Original, honestly not
+// NCERT-sourced; deliberately a step up from MINISTORY_MED in both length and how the ending is
+// earned rather than just stated, previewing the shape of Sarah's own tier-2/3 PASSAGES.
+const MINISTORY_LONG=[
+ {t:'Every year the school held a fair, and every class ran one stall to raise money for new library books. This year it was Mira’s class’s turn, and everyone had to bring an idea. Mira thought and thought, but every idea in her head seemed silly compared to her classmates’ plans for a cupcake stall and a ball-toss game.<br><br>That evening her older sister found her staring sadly at a blank piece of paper. “What do you love doing?” her sister asked. Mira loved drawing tiny pictures on scraps of paper — nothing special, she thought. But her sister’s eyes lit up. “Bookmarks,” she said. “Hand-drawn bookmarks. Nobody else will have those.”<br><br>On the day of the fair, Mira’s little stall sold out of bookmarks before lunchtime. Her teacher had to ask her to draw ten more that very afternoon. Mira realised that the idea that felt too small and ordinary to her was, to everyone else, the most special thing at the whole fair.',q:['Q) What was Mira’s class supposed to bring to the fair?','Q) What did Mira love doing, that her sister noticed?','Q) What happened to Mira’s bookmarks by lunchtime?'],a:['an idea for a stall','drawing tiny pictures on scraps of paper','they sold out'],x:'Q) Why did Mira think her idea was “silly” at first, even though it turned out to be the best one?',xa:'she thought something she found easy and ordinary could not be special, but other people saw it differently'},
+ {t:'Dee had borrowed “The Dragon Who Lost His Roar” from the school library two weeks ago, and now it was due back — except she could not find it anywhere. She searched under her bed, inside her school bag, and even in the kitchen, where books sometimes ended up by accident. Nothing.<br><br>She was about to give up when she remembered lending it to her cousin Fahad during a visit. Dee felt a small knot of worry in her stomach; the book still had to go back on time, and now it was in someone else’s house entirely.<br><br>Instead of hiding the problem, Dee told her teacher exactly what had happened. Her teacher smiled and said that being honest about a mistake was far more important than never making one, and gave her three extra days to get the book back. Fahad returned it that very weekend, a little bent at the corner but otherwise fine, and Dee never lent a library book again without writing it down first.',q:['Q) What was the name of the book Dee had borrowed?','Q) Where did Dee eventually remember the book had gone?','Q) What did Dee’s teacher give her because she was honest?'],a:['“The Dragon Who Lost His Roar”','she had lent it to her cousin Fahad','three extra days to get the book back'],x:'Q) Why did Dee’s teacher say being honest mattered more than never making a mistake?',xa:'because everyone makes mistakes sometimes, but telling the truth about them shows good character and helps fix the problem'},
+ {t:'On the first day of spring term, every child in Ms. Iyer’s class planted one bean seed in a small paper cup. Most children were excited for exactly one day, then forgot about their cups completely, leaving them dry on the windowsill.<br><br>Tia was different. Every single morning before class started, she gave her cup a small splash of water and turned it gently toward the light. Some days nothing seemed to change at all, and she began to wonder if she was wasting her time on an empty cup of soil.<br><br>Three weeks later, Tia’s bean had grown taller than all the others combined — a tangle of green leaves climbing up a little stick she had added herself. The other children’s seeds sat dry and shrivelled beside it. Ms. Iyer did not need to say anything about the difference; every child in the room could see exactly what daily care, even when nothing seems to be happening, can grow into.',q:['Q) What did every child plant on the first day of spring term?','Q) What did Tia do differently from the other children?','Q) How did Tia’s bean look after three weeks, compared to the others?'],a:['a bean seed in a small paper cup','she watered it every morning and turned it toward the light','it had grown tall with lots of leaves, while the others were dry and shrivelled'],x:'Q) Why did Tia keep watering her cup even when “nothing seemed to change”?',xa:'she kept caring for it patiently, trusting that the small daily effort would eventually make a difference'}
+];
+// MIRA_ALL_STORIES — the combined pool Independent Study (boosted) rungs draw from, so ladder-
+// extension rungs past rung 10 get real variety across all three length tiers instead of only
+// re-shuffling MINISTORY.
+const MIRA_ALL_STORIES=MINISTORY.concat(MINISTORY_MED,MINISTORY_LONG);
 const MWRITE={
  word:'Write one sentence about your favourite toy.',
  sent:'Write TWO sentences about what you did today.',
@@ -1303,6 +1394,9 @@ function mwPick(key,book){const v=MWRITE[key]||MWRITE.word;const pick=Array.isAr
 // effTier() helper defined above). `boost` is only ever set by intensifyRung on synthetic rungs past
 // BASE_LADDER_LEN — undefined on hand-authored rungs 1-10, so effWtier===L.wtier there (no-op).
 const WT_ORDER=['a','b','c','d'];
+// MIRA_SENT — word-order sentences for rungs 1-2's new GRADED writing item (see ws_english_mirayah).
+// Raises the floor: until now rungs 1-2's only writing was Block E's ungraded free-response prompt.
+const MIRA_SENT=['The cat is happy.','I like my red ball.','We play in the park.','She has a big dog.','He can run very fast.','The sun is hot today.','I see a small bird.','My mom baked a cake.'];
 function ws_english_mirayah(li,book){const L=LEVELS.mirayah.english[li];let blocks=[],ans=[];
  const effWtier=effTier(WT_ORDER,L.wtier,L.boost);
  // Block letters are assigned sequentially at push time (not hardcoded) because C (rhyme) and D (mini
@@ -1333,6 +1427,12 @@ function ws_english_mirayah(li,book){const L=LEVELS.mirayah.english[li];let bloc
  sf.forEach(s=>sa.push(s[1][0]));ans.push(bLetter+': '+sa.join(', '));
  // C rhyme (rung-gated)
  if(L.rhyme){const rh=shuf(RHYME).slice(0,3),ra=[];const cLetter=nextLetter();blocks.push({h:cLetter+'. Which word rhymes? (circle it)',items:rh.map((r,i)=>(i+1)+')  '+r[0]+'  →  '+shuf(r[1]).join('  /  '))});rh.forEach(r=>ra.push(r[0]+'→'+r[1][0]));ans.push(cLetter+': '+ra.join(', '));}
+ // Rungs 1-2 floor raise: a GRADED written-sentence item (word-order puzzle) — until now every
+ // writing task on these two rungs was Block E's ungraded free-response prompt, so there was no
+ // gradable sentence-level writing skill at the very start of the ladder.
+ if(li<=1){const sent=P(MIRA_SENT),words=shuf(sent.split(' ')),wLetter=nextLetter();
+  blocks.push({h:wLetter+'. Put the words in order and write the sentence',items:[words.join(' / ')+'   →   ______________________________']});
+  ans.push(wLetter+': '+sent);}
  // D mini story comprehension (rung-gated); qs:1 adds one harder inference question on top.
  // On hand-authored rungs (L.boost unset) mini also picks WHICH SLICE of the bank to draw from: mini:1
  // (rungs 3-5) draws only from MINISTORY[0-5] — concrete recall stories whose own inference question
@@ -1389,12 +1489,20 @@ function ws_english_mirayah(li,book){const L=LEVELS.mirayah.english[li];let bloc
  // through the already-rounded L.mini/L.qs, so every synthetic tier is guaranteed to add
  // something over the one before it. Still bounded by MINISTORY.length (12) — no new curriculum
  // content, only draws more of the bank's existing full stories as tiers climb.
+ // PASSAGE LENGTH now rises across rungs too, not just the SIGHT word tier — this was the #1
+ // ladder-plateau bug (mini story comprehension stayed single-paragraph at every rung it
+ // appeared on). li 2-4 (rungs 3-5, mini:1) keep the original single-paragraph MINISTORY[0-6]
+ // concrete pool unchanged. li 5-8 (rungs 6-9) now draw a 2-3 paragraph passage from
+ // MINISTORY_MED instead (mini:2 = concrete slice, mini:3 = moral/trait slice — same split
+ // intent as the old MINISTORY slicing, just on longer content). li 9+ (rung 10 "Bridge to
+ // big-girl" and every Independent Study rung beyond it once boosted) get a real multi-
+ // paragraph story from MINISTORY_LONG / the combined MIRA_ALL_STORIES pool.
  if(L.mini){
   const boost=L.boost||0;
-  const storyCount=boost?Math.min(MINISTORY.length,1+boost):1;
+  const storyCount=boost?Math.min(MIRA_ALL_STORIES.length,1+boost):1;
   const qsCount=boost?Math.min(storyCount,1+Math.floor(boost/2)):(L.qs?1:0);
-  const pool=boost?MINISTORY:(L.mini>=3?MINISTORY.slice(9):(L.mini>=2?MINISTORY.slice(6):MINISTORY.slice(0,6)));
-  const stories=boost?shuf(MINISTORY).slice(0,storyCount):[P(pool)];
+  const pool=boost?MIRA_ALL_STORIES:(li>=9?MINISTORY_LONG:li>=5?(L.mini>=3?MINISTORY_MED.slice(3):MINISTORY_MED.slice(0,3)):MINISTORY.slice(0,6));
+  const stories=boost?shuf(MIRA_ALL_STORIES).slice(0,storyCount):[P(pool)];
   let dq=[],da=[];
   stories.forEach((ms,i)=>{dq=dq.concat(ms.q);da=da.concat(ms.a);if(i<qsCount){dq.push(ms.x);da.push(ms.xa);}});
   const dLetter=nextLetter();
@@ -1425,10 +1533,17 @@ function ws_science_sarah(li){const L=SCI_SARAH[li];let blocks=[],ans=[];
  const fs=shuf(L.facts).slice(0,boost?L.facts.length:4);
  blocks.push({h:'B. What do you know?',items:fs.map((f,i)=>(i+1)+')  '+f[0]),write:1});
  ans.push('B: '+fs.map((f,i)=>(i+1)+') '+f[1]).join('  '));
- const sc=boost?[L.sc[L.sc.length-1]].concat(shuf(L.sc.slice(0,-1)).slice(0,Math.min(L.sc.length,1+boost)-1)):[P(L.sc)];
+ // Delivery bug: a normal (non-boosted) sheet drew ONE random sc/method item ([P(L.sc)]), so the
+ // hardest thinking question in the bank was never guaranteed to appear — a child could get lucky
+ // and only ever see the easy end. Fix: always guarantee the hardest (last-index) item, same as the
+ // boosted formula already does, and always serve 2 instead of 1 (hardest + one more at random) —
+ // raising the thinking-vs-recall share (Blocks C+D) relative to Block B's fixed 4 recall facts.
+ const scCount=boost?Math.min(L.sc.length,1+boost):Math.min(L.sc.length,2);
+ const sc=[L.sc[L.sc.length-1]].concat(shuf(L.sc.slice(0,-1)).slice(0,scCount-1));
  blocks.push({h:'C. Think it through',items:sc.map(s=>s[0]),write:2});
  ans.push('C: '+sc.map(s=>s[1]).join(' | '));
- const me=boost?[L.method[L.method.length-1]].concat(shuf(L.method.slice(0,-1)).slice(0,Math.min(L.method.length,1+boost)-1)):[P(L.method)];
+ const meCount=boost?Math.min(L.method.length,1+boost):Math.min(L.method.length,2);
+ const me=[L.method[L.method.length-1]].concat(shuf(L.method.slice(0,-1)).slice(0,meCount-1));
  blocks.push({h:'D. Like a scientist 🧪',items:me.map(m=>m[0]),write:3});
  ans.push('D: '+me.map(m=>m[1]).join(' | '));
  blocks.push({h:'E. Try it at home (safe — with a grown-up)',items:[L.lab],write:2,ungraded:true});
@@ -1444,18 +1559,27 @@ function ws_science_mirayah(li){const L=SCI_MIRAYAH[li];let blocks=[],ans=[];
  // all 3 already written per rung. No new curriculum content invented — just using material
  // already in this rung's own banks harder as tier rises.
  const boost=L.boost||0;
- const vs=shuf(L.vocab).slice(0,boost?L.vocab.length:2);
+ // Past the hand-authored ceiling, Independent Study now progresses through SCI_SARAH's own
+ // ladder (rung 1 upward, one rung per boost tier) instead of re-shuffling the same P2-3 bank
+ // forever — a genuinely harder, age-stretch academic step. Hand-authored rungs (boost falsy)
+ // are unaffected: src stays L, exactly as before.
+ const src=boost?SCI_SARAH[Math.min(boost-1,SCI_SARAH.length-1)]:L;
+ const vs=shuf(src.vocab).slice(0,boost?src.vocab.length:2);
  blocks.push({h:'A. New words — say it, then draw it',items:vs.map((v,i)=>(i+1)+')  '+v[0]+'  —  '+v[1]),ungraded:true});
- const fs=shuf(L.facts).slice(0,boost?L.facts.length:4);
+ const fs=shuf(src.facts).slice(0,boost?src.facts.length:4);
  blocks.push({h:'B. What do you know?',items:fs.map((f,i)=>(i+1)+')  '+f[0]),write:1});
  ans.push('B: '+fs.map((f,i)=>(i+1)+') '+f[1]).join('  '));
- const sc=boost?[L.sc[L.sc.length-1]].concat(shuf(L.sc.slice(0,-1)).slice(0,Math.min(L.sc.length,1+boost)-1)):[P(L.sc)];
+ const sc=boost?[src.sc[src.sc.length-1]].concat(shuf(src.sc.slice(0,-1)).slice(0,Math.min(src.sc.length,1+boost)-1)):[P(src.sc)];
  blocks.push({h:'C. Look & think',items:sc.map(s=>s[0]),write:1});
  ans.push('C: '+sc.map(s=>s[1]).join(' | '));
- const me=boost?[L.method[L.method.length-1]].concat(shuf(L.method.slice(0,-1)).slice(0,Math.min(L.method.length,1+boost)-1)):[P(L.method)];
+ const me=boost?[src.method[src.method.length-1]].concat(shuf(src.method.slice(0,-1)).slice(0,Math.min(src.method.length,1+boost)-1)):[P(src.method)];
  blocks.push({h:'D. Little scientist — guess, then test 🔎',items:me.map(m=>m[0]),write:1});
  ans.push('D: '+me.map(m=>m[1]).join(' | '));
- blocks.push({h:'E. Try it (with a grown-up)',items:[L.lab],write:1,ungraded:true});
+ blocks.push({h:'E. Try it (with a grown-up)',items:[src.lab],write:1,ungraded:true});
+ // F sort-with-reasoning (rungs 1-2 only, via L.sort) — upgrades those two rungs from pure
+ // recall ("is a rock alive?") to sorting a real set of items into groups and explaining the
+ // reasoning behind the trickiest one.
+ if(L.sort){blocks.push({h:'F. Sort it out',items:[L.sort.items.join(' · ')+'  —  '+L.sort.ask],write:2});ans.push('F: '+L.sort.a);}
  return{title:'Science Worksheet — Mirayah (6)',sub:'Level '+(li+1)+'/'+SCI_MIRAYAH.length+' · '+L.n,level:mirayahSciLevelTag(li),blocks,ans};}
 
 /* ---------- LANE PRACTICE CARDS (Swimming · Music · Riding · Madhurim) ---------- */
@@ -1600,7 +1724,13 @@ function levelRail(gk,sk){const lad=LEVELS[gk][sk],here=LEVEL[gk][sk];let r='<di
  const L=lad[here];
  /* science ladders run out of real escalation once boost saturates every sc/method item
     (see sciMaxUsefulBoost) — don't claim "no ceiling" once further tiers are content-identical */
- const sciSaturated=sk==='science'&&typeof L.boost==='number'&&L.boost>=sciMaxUsefulBoost(L);
+ const sciSaturated=sk==='science'&&gk!=='mirayah'&&typeof L.boost==='number'&&L.boost>=sciMaxUsefulBoost(L);
+ /* Mirayah's science Independent Study now draws from SCI_SARAH (rung 1 upward, one rung per
+    boost tier) instead of widening her own rung-10 bank — see ws_science_mirayah's `src`. Once
+    boost reaches SCI_SARAH.length, src pins to SCI_SARAH's own last rung, and that rung's own
+    sc/method arrays are already far smaller than boost by then, so the widening formula is
+    fully maxed the very same tier src pins — saturation point is simply SCI_SARAH.length. */
+ const sciMirayahSaturated=sk==='science'&&gk==='mirayah'&&typeof L.boost==='number'&&L.boost>=SCI_SARAH.length;
  /* Sarah's English ladder-extension rungs plateau too: vt caps at 'expert' (boost>=3) and pt is
     already pinned to tier 4 by intensifyRung, but gc (Block D grammar-fix count) keeps growing
     arithmetically forever with no cap of its own — it's just silently truncated by slice() once
@@ -1611,16 +1741,15 @@ function levelRail(gk,sk){const lad=LEVELS[gk][sk],here=LEVEL[gk][sk];let r='<di
     honesty" (verified live: MTOTAL plateaus at 36 from boost=10 onward). */
  const engSarahSaturated=sk==='english'&&gk==='sarah'&&typeof L.boost==='number'&&L.gc>=GRAMMAR[effTier(GT_ORDER,L.gt,L.boost)].length;
  /* Mirayah's English ladder-extension rungs plateau too: ws_english_mirayah's boosted-mini path
-    (storyCount=min(MINISTORY.length,1+boost), qsCount=min(storyCount,1+floor(boost/2))) is bounded
-    by MINISTORY.length (12 stories) — qsCount is the binding constraint, reaching 12 (and therefore
-    both counts going fully flat) once boost>=2*(MINISTORY.length-1)=22. wtier is already pinned at
-    the last WT_ORDER tier from rung 10 onward and Block B is always exactly 4 items, so from that
-    point every further "level up" reshuffles the same 12 full stories with no new content — same
-    saturation class already fixed for science and Sarah's English ladder above.
-    Verified live: boost=15 -> storyCount=12,qsCount=8; boost=20 -> 12,11; boost=22 -> 12,12 (flat
-    from here on, confirmed through boost=50). */
- const engMirayahSaturated=sk==='english'&&gk==='mirayah'&&typeof L.boost==='number'&&L.boost>=2*(MINISTORY.length-1);
- const saturated=sciSaturated||engSarahSaturated||engMirayahSaturated;
+    (storyCount=min(MIRA_ALL_STORIES.length,1+boost), qsCount=min(storyCount,1+floor(boost/2))) is
+    bounded by MIRA_ALL_STORIES.length (MINISTORY+MINISTORY_MED+MINISTORY_LONG combined) — qsCount
+    is the binding constraint, reaching the pool length (and therefore both counts going fully flat)
+    once boost>=2*(MIRA_ALL_STORIES.length-1). wtier is already pinned at the last WT_ORDER tier
+    from rung 10 onward and Block B is always exactly 4 items, so from that point every further
+    "level up" reshuffles the same combined story pool with no new content — same saturation class
+    already fixed for science and Sarah's English ladder above. */
+ const engMirayahSaturated=sk==='english'&&gk==='mirayah'&&typeof L.boost==='number'&&L.boost>=2*(MIRA_ALL_STORIES.length-1);
+ const saturated=sciSaturated||sciMirayahSaturated||engSarahSaturated||engMirayahSaturated;
  const topMsg=saturated?' · 🔁 full material reached — same bank, fresh shuffle each sheet':' · 🚀 no ceiling — keeps climbing';
  r+='<div class="lvline">Rung <b>'+(here+1)+(beyond?'':' of '+BASE_LADDER_LEN[gk][sk])+'</b> — '+L.n+(top?topMsg:' · next: '+lad[here+1].n)+'</div>';
  return r;}
