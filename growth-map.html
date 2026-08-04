@@ -1856,11 +1856,11 @@ function ws_english_mirayah(li,book){const L=LEVELS.mirayah.english[li];let bloc
  // rungs (L.boost set by intensifyRung), mini and qs used to just stay truthy forever — intensifyRung kept
  // scaling their numeric values (2→3→4..., 1→2→3...) but ws_english_mirayah only ever read them as
  // booleans, so nothing past rung 10 actually got harder (see content/english-mirayah-boost.md history).
- // Fix: once boosted, read the magnitude instead — more MINISTORY passages (drawn from the full bank) as
- // `mini` grows, and more of those passages carry their own harder inference question as `qs` grows.
- // No new curriculum content invented anywhere here — only reuses/repartitions the bank's existing 12
- // full stories (each already has its own x/xa question). Bounded by MINISTORY.length so it can't overrun
- // the bank.
+ // Fix: once boosted, read the magnitude instead — more passages (drawn from the combined MIRA_ALL_STORIES
+ // bank) as `mini` grows, and more of those passages carry their own harder inference question as `qs`
+ // grows. No new curriculum content invented anywhere here — only reuses/repartitions the bank's existing
+ // full stories (each already has its own x/xa question). Bounded by MIRA_ALL_STORIES.length so it can't
+ // overrun the bank.
  // Rungs 3-4 ('First sentences'/'Short comprehension') were ALSO both mini:1, wtier:'b', drawing
  // from the identical MINISTORY[0-5] pool with no qs on either — a confirmed mastery-gated level-up
  // from rung 3 to rung 4 produced statistically indistinguishable passages (live-generated samples
@@ -1908,8 +1908,9 @@ function ws_english_mirayah(li,book){const L=LEVELS.mirayah.english[li];let bloc
  // and storyCount stayed put within each 3-tier block, on live-generated output. Fix: derive
  // storyCount/qsCount straight from the raw tier number (L.boost) instead of round-tripping
  // through the already-rounded L.mini/L.qs, so every synthetic tier is guaranteed to add
- // something over the one before it. Still bounded by MINISTORY.length (12) — no new curriculum
- // content, only draws more of the bank's existing full stories as tiers climb.
+ // something over the one before it. Still bounded by MIRA_ALL_STORIES.length (28: MINISTORY 18 +
+ // MINISTORY_MED 7 + MINISTORY_LONG 3) — no new curriculum content, only draws more of the combined
+ // bank's existing full stories as tiers climb.
  // PASSAGE LENGTH now rises across rungs too, not just the SIGHT word tier — this was the #1
  // ladder-plateau bug (mini story comprehension stayed single-paragraph at every rung it
  // appeared on). li 2-4 (rungs 3-5, mini:1) keep the original single-paragraph MINISTORY[0-6]
