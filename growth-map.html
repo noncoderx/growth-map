@@ -223,7 +223,22 @@ const LEVELS={
    {n:'Opinion & why',        vt:'mid',   pt:2, gt:'hard', gc:6, write:'opinion'},
    {n:'Multi-paragraph',      vt:'mid',   pt:3, gt:'hard', gc:7, write:'multi'},
    {n:'Persuasive writing',   vt:'hard',  pt:3, gt:'hard', gc:8, write:'persuade'},
-   {n:'Structure & argument', vt:'hard',  pt:3, gt:'hard', gc:9, write:'argument'},
+   // gc:10 (was 9) — this rung and 'Persuasive writing' above previously shared vt:'hard'/pt:3/gt:'hard'
+   // identically, so Block A (VOCAB.hard) and Block C (PASSAGES tier3) drew from the exact same pools
+   // on both mastery-gated rungs, and gc's routine +1 (8->9, one extra grammar-fix line out of ~19-20
+   // questions, ~5%) was the ONLY thing differentiating them. vt can't be promoted to 'harder' here
+   // (that would just collide with 'Essay basics' below, which was already promoted to vt:'harder' to
+   // fix the next seam — see that rung's comment) and pt can't jump to 4 here without breaking the
+   // ladder's non-decreasing pt sequence (pt:4 doesn't start until 'Debate' 3 rungs later). So this
+   // widens the gap the mechanical way instead: gc jumps 8->10 (not 8->9), doubling Block D's growth
+   // versus the old +1 step and pushing MTOTAL to 21 (~10.5% over rung6's 19) so mastery is measured
+   // against a genuinely bigger grammar load, not just one more line. GRAMMAR.hard has 20 entries, so
+   // gc:10 is well within pool size. gc still ties 'Essay basics' below (10) rather than exceeding it —
+   // ties are already precedented on this ladder (Comprehension/Inference both gc:4) and 'Essay basics'
+   // already differs from this rung via vt, so the tie doesn't recreate an identical-rung pair.
+   // (see growth-map-exhaustive-audit finding, english/sarah rung 6 'Persuasive writing' -> rung 7
+   // 'Structure & argument'.)
+   {n:'Structure & argument', vt:'hard',  pt:3, gt:'hard', gc:10, write:'argument'},
    // vt:'harder' (was 'hard') — rungs 6-8 (this rung and the two above) previously all set vt:'hard'
    // AND pt:3 identically, so Block A (VOCAB.hard) and Block C (PASSAGES tier3) drew from the exact
    // same pools on all three mastery-gated rungs; only gc moved. Promoting Essay basics to VOCAB.harder
