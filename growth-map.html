@@ -277,7 +277,11 @@ const LEVELS={
   english:[
    {n:'Sight words',      wtier:'b', mini:0, write:'word'},
    {n:'Rhyming words',    wtier:'b', mini:0, write:'word',  rhyme:1},
-   {n:'First sentences',  wtier:'a', mini:1, write:'sent'},
+   // rung 3 wtier was 'a' — commit d4ea56a raised rungs 1-2's floor from 'a'→'b' but didn't touch this
+   // rung, leaving it an easier Block B (sight-word) tier than both rung 2 before it and rung 4 after
+   // it, right after a mastery-gated level-up. Bumped to 'b' to match, so Block B is monotonic
+   // non-decreasing across rungs 1-4.
+   {n:'First sentences',  wtier:'b', mini:1, write:'sent'},
    {n:'Short comprehension', wtier:'b', mini:1, write:'sent'},
    {n:'Retell it',        wtier:'b', mini:1, write:'retell', qs:1},
    {n:'Two details',      wtier:'b', mini:2, write:'two', qs:1},
