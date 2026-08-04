@@ -1718,11 +1718,20 @@ function ws_english_mirayah(li,book){const L=LEVELS.mirayah.english[li];let bloc
  // intent as the old MINISTORY slicing, just on longer content). li 9+ (rung 10 "Bridge to
  // big-girl" and every Independent Study rung beyond it once boosted) get a real multi-
  // paragraph story from MINISTORY_LONG / the combined MIRA_ALL_STORIES pool.
+ // Rung 6 ('Two details') and rung 7 ('Mini paragraph') are BOTH mini:2, so the mini>=3 binary
+ // test alone sent both to the identical MINISTORY_MED.slice(0,3) concrete pool — a confirmed
+ // level-up from 6→7 left Block D's passage (the rung's own graded centerpiece) completely
+ // unchanged, only Block B's sight-word tier moved (b→c). Fixed by giving the mini:2 (concrete)
+ // half of the split a genuine second state, keyed off effWtier (already computed above, already
+ // distinct per-rung, no new config value needed): wtier 'b' (rung 6) draws the first 2 concrete
+ // stories, any other tier at mini:2 (rung 7, wtier 'c') draws a different 2-story slice — real,
+ // non-identical pools for the two rungs. The mini>=3 (moral) branch — rungs 8-9, both mini:3 —
+ // is untouched; not part of this fix.
  if(L.mini){
   const boost=L.boost||0;
   const storyCount=boost?Math.min(MIRA_ALL_STORIES.length,1+boost):1;
   const qsCount=boost?Math.min(storyCount,1+Math.floor(boost/2)):(L.qs?1:0);
-  const pool=boost?MIRA_ALL_STORIES:(li>=9?MINISTORY_LONG:li>=5?(L.mini>=3?MINISTORY_MED.slice(3):MINISTORY_MED.slice(0,3)):MINISTORY.slice(0,6));
+  const pool=boost?MIRA_ALL_STORIES:(li>=9?MINISTORY_LONG:li>=5?(L.mini>=3?MINISTORY_MED.slice(3):(effWtier==='b'?MINISTORY_MED.slice(0,2):MINISTORY_MED.slice(1,3))):MINISTORY.slice(0,6));
   const stories=boost?shuf(MIRA_ALL_STORIES).slice(0,storyCount):[P(pool)];
   let dq=[],da=[];
   stories.forEach((ms,i)=>{dq=dq.concat(ms.q);da=da.concat(ms.a);if(i<qsCount){dq.push(ms.x);da.push(ms.xa);}});
