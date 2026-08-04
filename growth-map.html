@@ -1395,7 +1395,8 @@ function ws_english_sarah(li,book){const L=LEVELS.sarah.english[li];let blocks=[
   ans.push('E/F techniques: '+td.map(d=>d.name+' = '+d.explain).join('; ')+' (F: Q1/Q2 open — accept any correctly identified device or grammatically sound original sentence using it)');
   wLetter='G';
  }
- // F/E writing — free-response task with no printed answer key; must not count toward MTOTAL/mastery.
+ // G/E writing — free-response task with no printed answer key; must not count toward MTOTAL/mastery.
+ // wLetter is 'E' (ungated rungs, no Block E/F above) or 'G' (L.tech-gated rungs 9-12, after Block E/F) — never 'F'.
  blocks.push({h:wLetter+'. Writing challenge',items:[WRITE_TASKS[L.write](book)],write:6,ungraded:true});
  return{title:'English Worksheet — Sarah (8)',sub:'Level '+(li+1)+'/'+LEVELS.sarah.english.length+' · '+L.n+'   ·   📖 '+book,level:eLevelTag(li),blocks,ans};}
 function eLevelTag(li){const map=['P3 · fact + vocab comprehension','P3–P4 · inference','P4 · vocab-in-context','P4 · opinion + reasoning','P5 · multi-paragraph writing','P5 · persuasive writing','P5–P6 · structured argument','P6 · essay structure','Rhetoric & technique','Debate — argue both sides','Personal-statement voice','Interview / seminar reasoning'];return map[li]||'Sarah English';}
