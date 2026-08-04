@@ -241,9 +241,24 @@ const LEVELS={
    // never did. The tier-4 PASSAGES bank already existed (4 passages) but was only ever reachable
    // via intensifyRung's boost past rung 12 — promoting it into these 3 hand-authored rungs makes
    // reading escalate alongside writing on the ladder itself, not just past its ceiling.
+   // tech:1/2/3 + vt 'harder'/'harder'/'expert' — after the pt promotion above, rungs 10-12 still
+   // set vt/gt/tech identically (only gc moved), so Block A (vocab) drew the same 16-word VOCAB.harder
+   // pool and Block E (technique teaching) drew the same fixed 2-item RHETORIC slice on all three
+   // mastery-gated rungs, with only 4 tier-4 passages now shared across all three Block C draws too
+   // (see growth-map-exhaustive-audit finding, english/sarah rungs 10-12). No sourced curriculum
+   // reaches past VOCAB.harder, so rather than invent new tier-4 passages, this reuses two banks that
+   // already exist in the file unused for these rungs: (1) VOCAB.expert — authored to feed
+   // intensifyRung's boost past rung 12 but never otherwise reachable — is promoted early onto
+   // "Interview reasoning" (rung 12, the top of the hand-authored ladder and the rung whose skill —
+   // reasoning under questioning — best matches that bank's "sophisticated-argument" word list), so
+   // its Block A pool differs from rungs 10-11's shared VOCAB.harder; (2) RHETORIC's own draw size
+   // (1+L.tech, already generic in Block E/F) is staggered 2→3→4 items across debate→personal→
+   // interview instead of pinned at 2 everywhere, so the technique-teaching content genuinely widens
+   // rung-to-rung even though rungs 10-11 still necessarily share the 4-entry tier-4 passage pool
+   // (there is no unused higher-tier passage bank to promote into, unlike vocab/technique).
    {n:'Debate — both sides',  vt:'harder',pt:4, gt:'hard', gc:12, write:'debate',   tech:1},
-   {n:'Personal voice',       vt:'harder',pt:4, gt:'hard', gc:13, write:'personal', tech:1},
-   {n:'Interview reasoning',  vt:'harder',pt:4, gt:'hard', gc:14, write:'interview',tech:1}
+   {n:'Personal voice',       vt:'harder',pt:4, gt:'hard', gc:13, write:'personal', tech:2},
+   {n:'Interview reasoning',  vt:'expert',pt:4, gt:'hard', gc:14, write:'interview',tech:3}
   ]
  },
  mirayah:{
