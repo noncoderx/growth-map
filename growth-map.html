@@ -701,7 +701,13 @@ function m_words(L){const B=[],a=[];let idx=0;const num=()=>P(NAMES);const fmt=p
  else{const g=L.mul2?R(4,8):R(2,6),share=L.mul2?R(7,15):R(3,9),T=g*share,n=R(1,g-1);B.push((++idx)+')  '+num()+' shares '+T+' mangoes equally among '+g+' friends. If '+n+' of the friends eat their whole share, how many mangoes have been eaten in total?');a.push((share*n)+' mangoes eaten ('+share+' each)');}
  // 3) a change / division problem
  if(L.dec){const cP=R(15,95),cnt=R(3,6),totP=cP*cnt,payP=Math.ceil((totP+R(50,400))/100)*100;B.push((++idx)+')  Pencils cost ₹'+fmt(cP)+' each. '+num()+' buys '+cnt+' and pays with a ₹'+(payP/100)+' note. How much change?');a.push('₹'+fmt(payP-totP));}
- else{const big=L.mul2||L.longmul,c=big?R(15,45):R(6,19),cnt=big?R(4,8):R(3,6),tot=c*cnt,pay=Math.ceil((tot+R(5,40))/10)*10;B.push((++idx)+')  Pens cost ₹'+c+' each. '+num()+' buys '+cnt+' and pays with a ₹'+pay+' note. How much change?');a.push('₹'+(pay-tot));}
+ // cBo — same fix pattern as item 2's wBo above: this branch was gated only on the boolean
+ // big=L.mul2||L.longmul with no further scaling, so it drew the identical R(15,45)/R(4,8)/R(5,40)
+ // price/count/change-buffer distribution on every non-dec rung from 2 through 12 (chal climbing
+ // 1->6 across 10 real level-ups) — see growth-map-exhaustive-audit finding, maths/sarah m_words
+ // Block B item 3. Folding L.chal in past the big-branch baseline (chal:1, first true at rung 2)
+ // widens c/cnt/pay's upper bounds as chal climbs instead of freezing.
+ else{const big=L.mul2||L.longmul,cBo=Math.max(0,(L.chal||1)-1),c=big?R(15,45+3*cBo):R(6,19),cnt=big?R(4,8+cBo):R(3,6),tot=c*cnt,pay=Math.ceil((tot+R(5,40+5*cBo))/10)*10;B.push((++idx)+')  Pens cost ₹'+c+' each. '+num()+' buys '+cnt+' and pays with a ₹'+pay+' note. How much change?');a.push('₹'+(pay-tot));}
  return{items:B,a};}
 
 function m_bar(L){const t=L.bar||'cmp';const fmtB=p=>Math.floor(p/100)+'.'+String(p%100).padStart(2,'0');
