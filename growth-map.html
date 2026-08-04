@@ -983,11 +983,18 @@ function ws_maths_mirayah(li){const L=LEVELS.mirayah.maths[li];let blocks=[],ans
  // block's actual output stayed pinned to the same ~100-199+10-99 range forever (see audit finding).
  // Fixed: the hundreds digit is now drawn from a range derived from addMax (hj), so as the ladder
  // extends and addMax genuinely grows, x's hundreds place grows with it. Rung 10's own hand-authored
- // value is now addMax:900 (a deliberate "bridge to big numbers" widening), so hj computes to a flat
- // 8 (capped by Math.min(8,...) to avoid overflowing into a 4-digit sum) — every item on this rung
- // has x in the 800s, not the original ~100-199 range from when addMax was 99.
+ // value is now addMax:900, so hj computes to a flat 9 — every item on this rung has x in the 900s.
+ // hj-hard-capped-at-8-forever bug (found in exhaustive audit) — the Math.min(8,...) ceiling here was
+ // meant only to keep rung 10 itself at 3 digits, but it also silently capped every synthetic
+ // "Independent Study" rung past rung 10: since round(900/100)=9 already exceeds 8, hj was pinned to 8
+ // no matter how far addMax kept climbing (900→1035→1170→...), so this block's hundreds digit never
+ // moved past 8xx even after many level-ups — Block A (bonds), by contrast, has no such ceiling and
+ // genuinely keeps escalating forever. Fixed: dropped the artificial ceiling — hj now simply tracks
+ // round(cap/100) with only a floor, so x's hundreds place (and eventually thousands, on far-future
+ // tiers) keeps growing right alongside addMax, the same "no ceiling" behavior Block A already has.
+ // Standard next step after 3-digit addition (Singapore P3), not a fabricated skill.
  {let ad=[],a=[];for(let i=0;i<6;i++){const cap=L.addMax||10;let x,y;
-  if(L.regroup>=3){const hj=Math.max(1,Math.min(8,Math.round(cap/100))),xo=R(1,9),yo=R(10-xo,9),xt=R(5,9),yt=R(Math.max(1,9-xt),9);x=hj*100+xt*10+xo;y=yt*10+yo;}
+  if(L.regroup>=3){const hj=Math.max(1,Math.round(cap/100)),xo=R(1,9),yo=R(10-xo,9),xt=R(5,9),yt=R(Math.max(1,9-xt),9);x=hj*100+xt*10+xo;y=yt*10+yo;}
   else if(L.regroup>=2){const xo=R(1,9),yo=R(10-xo,9),xt=R(4,9),yt=R(Math.max(1,9-xt),9);x=xt*10+xo;y=yt*10+yo;}
   else if(L.regroup){const xo=R(1,9),yo=R(10-xo,9),tmax=Math.max(1,Math.floor((cap-xo-yo)/20)),xt=R(1,tmax),yt=R(1,tmax);x=xt*10+xo;y=yt*10+yo;}
   else{x=R(2,Math.floor(cap*0.6));y=R(2,Math.max(2,cap-x));}
@@ -1009,11 +1016,16 @@ function ws_maths_mirayah(li){const L=LEVELS.mirayah.maths[li];let blocks=[],ans
  // subMax-blind past rung 10 — same bug as Block B: h was hardcoded R(1,3) regardless of subMax, so
  // every synthetic Independent Study rung (permanently regroup>=3) kept x pinned to {100,200,300} even
  // as subMax kept climbing past 99. Fixed: h's ceiling now derives from subMax (hj), floored at 3.
- // Rung 10's own hand-authored value is now subMax:900, so hj computes to a flat 9 (capped by
- // Math.min(9,...) to avoid overflowing into a 4-digit minuend) — every item on this rung has x in
- // {100,200,...,900}, not the original {100,200,300} range from when subMax was 99.
+ // Rung 10's own hand-authored value is now subMax:900, so hj computes to a flat 9 — every item on
+ // this rung has x in {100,200,...,900}.
+ // hj-hard-capped-at-9-forever bug (found in exhaustive audit) — same class as Block B: round(900/100)
+ // already equals 9, the Math.min(9,...) ceiling, so every synthetic Independent Study rung past
+ // rung 10 kept the minuend pinned to {100,...,900} forever no matter how far subMax climbed past 900.
+ // Fixed: dropped the artificial ceiling — hj now simply tracks round(cap/100) with only a floor, so
+ // the minuend keeps growing into {1000,1100,...} on far-future tiers exactly as subMax does, matching
+ // Block B's fix and Block A's already-uncapped growth. Standard next step after 3-digit subtraction.
  if(L.subMax){let sb=[],a=[];for(let i=0;i<6;i++){const cap=L.subMax;let x,y;
-  if(L.regroup>=3){const hj=Math.max(3,Math.min(9,Math.round(cap/100))),h=R(1,hj);x=h*100;y=R(11,89);}
+  if(L.regroup>=3){const hj=Math.max(3,Math.round(cap/100)),h=R(1,hj);x=h*100;y=R(11,89);}
   else if(L.regroup>=2){const xo=R(0,8),yo=R(xo+1,9),yt=R(1,9);x=100+xo;y=yt*10+yo;}
   else if(L.regroup){const xo=R(0,8),yo=R(xo+1,9),tmax=Math.max(2,Math.floor(cap/10)),xt=R(2,tmax),yt=R(1,xt-1);x=xt*10+xo;y=yt*10+yo;}
   else{x=R(Math.floor(cap*0.4),cap);y=R(1,x-1);}
@@ -1030,7 +1042,16 @@ function ws_maths_mirayah(li){const L=LEVELS.mirayah.maths[li];let blocks=[],ans
  // matches block D), then g's own range is derived from mulMax/per (same pattern as block H's twostep:2
  // fix), capped at 20 for plausibility ("draw the groups") — so raising mulMax now actually raises the
  // achievable ceiling, while g is still floored so g*per can never exceed mulMax.
- if(L.mul){const arr=L.count||[2,5,10],mCap=L.mulMax||40,per=P(arr),gmax=Math.max(2,Math.min(20,Math.floor(mCap/per))),gmin=Math.max(2,Math.floor(gmax*0.6)),g=R(gmin,gmax);
+ // group-count flat-20-forever bug (found in exhaustive audit) — the 20 cap was meant to keep "draw
+ // the groups" physically drawable at rung 10, but rung 10's own mulMax:90 already pushes floor(90/per)
+ // past 20 for the smaller counts in L.count ([3,4,6]), so every synthetic Independent Study rung past
+ // rung 10 kept landing on the same capped 20 groups regardless of how high mulMax climbed. Unlike
+ // Blocks B/C/G (plain digit magnitude), this block asks a 6-year-old to physically draw g groups, so
+ // removing the cap entirely isn't reasonable — 100+ hand-drawn groups isn't a usable worksheet. Fixed:
+ // the ceiling now grows slowly with boost (+1 every 3 Independent Study tiers) instead of staying
+ // frozen at 20 forever, so the block keeps differentiating over many level-ups while the group count
+ // a child is asked to draw stays in a plausible range.
+ if(L.mul){const arr=L.count||[2,5,10],mCap=L.mulMax||40,per=P(arr),gCeil=20+Math.floor((L.boost||0)/3),gmax=Math.max(2,Math.min(gCeil,Math.floor(mCap/per))),gmin=Math.max(2,Math.floor(gmax*0.6)),g=R(gmin,gmax);
   blocks.push({h:'E. Groups',items:[g+' baskets have '+per+' apples each. How many apples in all?  ____   (draw the groups)']});ans.push('E: '+(g*per));}
  // shapes — shapes:1 (rungs 1-3, 2D only) draws from MOE P1 Geometry 1.1's 4 basic 2D shapes
  // (rectangle/square/circle/triangle). shapes:2 (rungs 4-7) was a dead-tier: every rung from
@@ -1076,24 +1097,29 @@ function ws_maths_mirayah(li){const L=LEVELS.mirayah.maths[li];let blocks=[],ans
  // addMax/subMax-blind past rung 10 — same bug as Blocks B/C: all three bridge3 kinds hardcoded their
  // hundreds digit (100 flat, or h=R(1,3)) regardless of how far addCap/subCap grew on synthetic
  // Independent Study rungs (permanently regroup>=3 once the ladder extends past rung 10). Fixed with
- // the exact same hj-derived-from-cap trick as Block B/C (capped at 8/9 to avoid 4-digit overflow).
- // Rung 10's own hand-authored addMax/subMax is now 900 (not 99), so hj computes to a flat 8/9 on
+ // the exact same hj-derived-from-cap trick as Block B/C.
+ // Rung 10's own hand-authored addMax/subMax is now 900 (not 99), so hj computes to a flat 9 on
  // this rung too — matching Block B/C's behavior, not the original addMax/subMax:99 output.
+ // hj-hard-capped-at-8/9-forever bug (found in exhaustive audit) — same class as Blocks B/C: the
+ // Math.min(8,...)/Math.min(9,...) ceilings were already saturated by rung 10's own addMax/subMax:900
+ // (round(900/100)=9), so every synthetic Independent Study rung past rung 10 kept landing in the exact
+ // same 100-999 band forever no matter how far addCap/subCap climbed. Fixed identically to Block B/C:
+ // dropped the artificial ceiling so hj keeps tracking round(cap/100) with only a floor.
  if(L.story){
   if(L.story>=2){
    const kind=R(0,2),addCap=L.addMax||60,subCap=L.subMax||addCap,bridge=L.regroup>=2,bridge3=L.regroup>=3;
    if(kind===0){let a,b;
-    if(bridge3){const hj=Math.max(1,Math.min(8,Math.round(addCap/100))),ao=R(1,9),bo=R(10-ao,9),at=R(5,9),bt=R(Math.max(1,9-at),9);a=hj*100+at*10+ao;b=bt*10+bo;}
+    if(bridge3){const hj=Math.max(1,Math.round(addCap/100)),ao=R(1,9),bo=R(10-ao,9),at=R(5,9),bt=R(Math.max(1,9-at),9);a=hj*100+at*10+ao;b=bt*10+bo;}
     else if(bridge){const ao=R(1,9),bo=R(10-ao,9),at=R(4,9),bt=R(Math.max(1,9-at),9);a=at*10+ao;b=bt*10+bo;}
     else{a=R(20,Math.max(21,addCap-15));b=R(10,Math.max(11,addCap-a));}
     blocks.push({h:'G. Story sum',items:[P(NAMES)+' collected '+a+' shells and found '+b+' more. How many shells now?  ____'],write:1});ans.push('G: '+(a+b));}
    else if(kind===1){let a,b;
-    if(bridge3){const hj=Math.max(3,Math.min(9,Math.round(subCap/100))),h=R(1,hj);a=h*100;b=R(11,89);}
+    if(bridge3){const hj=Math.max(3,Math.round(subCap/100)),h=R(1,hj);a=h*100;b=R(11,89);}
     else if(bridge){const xo=R(0,8),yo=R(xo+1,9),yt=R(1,9);a=100+xo;b=yt*10+yo;}
     else{a=R(Math.floor(subCap*0.5),subCap);b=R(10,a-5);}
     blocks.push({h:'G. Story sum',items:[P(NAMES)+' had '+a+' bangles and gave away '+b+'. How many bangles left?  ____'],write:1});ans.push('G: '+(a-b));}
    else{let start,total;
-    if(bridge3){const hj=Math.max(1,Math.min(8,Math.round(addCap/100))),ao=R(1,9),bo=R(10-ao,9),at=R(5,9),bt=R(Math.max(1,9-at),9);start=hj*100+at*10+ao;total=start+(bt*10+bo);}
+    if(bridge3){const hj=Math.max(1,Math.round(addCap/100)),ao=R(1,9),bo=R(10-ao,9),at=R(5,9),bt=R(Math.max(1,9-at),9);start=hj*100+at*10+ao;total=start+(bt*10+bo);}
     else if(bridge){const ao=R(1,9),bo=R(10-ao,9),at=R(4,9),bt=R(Math.max(1,9-at),9);start=at*10+ao;total=start+(bt*10+bo);}
     else{start=R(20,50);total=R(start+10,Math.max(start+11,addCap));}
     blocks.push({h:'G. Story sum',items:[start+' birds were sitting on a tree. A few more joined. Now there are '+total+' birds. How many birds joined?  ____'],write:1});ans.push('G: '+(total-start));}
@@ -1115,10 +1141,16 @@ function ws_maths_mirayah(li){const L=LEVELS.mirayah.maths[li];let blocks=[],ans
  // rung9's. Fixed: per is still drawn from L.count (kept, matches block D) but g is now derived from
  // mulMax (capped at 20 boxes so the story stays plausible) so g*per ranges roughly 45-90, actually
  // approaching the rung's stated ceiling instead of maxing out at 36.
+ // box-count flat-20-forever bug (found in exhaustive audit) — same class as Block E: rung 10's own
+ // mulMax:90 already pushes floor(mulMax/per) past 20 for the smaller L.count values, so every
+ // synthetic Independent Study rung kept the box count pinned at the 20 cap forever regardless of how
+ // far mulMax climbed. Fixed the same way as Block E — the ceiling now grows slowly with boost
+ // (+1 every 3 tiers) instead of staying frozen, keeping the "pack boxes" story physically plausible
+ // while still letting the block differentiate over many level-ups.
  if(L.twostep){
   const cap=Math.max(L.addMax||30,L.subMax||30);
   if(L.twostep>=2&&L.mul){
-   const arr=L.count||[3,4,6],mCap=L.mulMax||90,per=P(arr),gmax=Math.min(20,Math.max(per,Math.floor(mCap/per))),gmin=Math.max(per,Math.floor(gmax*0.6)),g=R(gmin,gmax),total=g*per,give=R(10,Math.max(11,Math.min(total-5,40)));
+   const arr=L.count||[3,4,6],mCap=L.mulMax||90,per=P(arr),gCeil=20+Math.floor((L.boost||0)/3),gmax=Math.min(gCeil,Math.max(per,Math.floor(mCap/per))),gmin=Math.max(per,Math.floor(gmax*0.6)),g=R(gmin,gmax),total=g*per,give=R(10,Math.max(11,Math.min(total-5,40)));
    blocks.push({h:'H. Two-step story',items:[P(NAMES)+' packs '+g+' boxes with '+per+' pencils in each box, then gives away '+give+' pencils. How many pencils are left?  ____'],write:1});
    ans.push('H: '+(total-give));
   }else{
