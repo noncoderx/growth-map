@@ -1835,10 +1835,10 @@ function ws_science_mirayah(li){const L=SCI_MIRAYAH[li];let blocks=[],ans=[];
  // (vocab/facts/sc/method are string-pair arrays, lab is a string) for intensifyRung's generic
  // scaling loop to touch, so every Independent Study tier used to silently re-serve rung 10
  // unchanged (same bug as ws_science_sarah, fixed in commit a604c65). Fix: once boosted, widen
- // the SAME existing banks instead — full vocab + fact lists (vs the base 2/4-item slice), and
+ // the slice pulled from `src` — full vocab + fact lists (vs the base 2/4-item slice), and
  // guarantee the hardest (last-index) sc/method question plus extra ones as tier climbs, up to
- // all 3 already written per rung. No new curriculum content invented — just using material
- // already in this rung's own banks harder as tier rises.
+ // all 3 already written per rung. See the next comment block for what `src` actually is once
+ // boosted — it is NOT always this rung's own L, so this widening can pull in new banks.
  const boost=L.boost||0;
  // Past the hand-authored ceiling, Independent Study now progresses through SCI_SARAH's own
  // ladder (rung 1 upward, one rung per boost tier) instead of re-shuffling the same P2-3 bank
