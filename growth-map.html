@@ -1936,7 +1936,11 @@ function ws_science_mirayah(li){const L=SCI_MIRAYAH[li];let blocks=[],ans=[];
  // ladder (rung 1 upward, one rung per boost tier) instead of re-shuffling the same P2-3 bank
  // forever — a genuinely harder, age-stretch academic step. Hand-authored rungs (boost falsy)
  // are unaffected: src stays L, exactly as before.
- const src=boost?SCI_SARAH[Math.min(boost-1,SCI_SARAH.length-1)]:L;
+ // Uses BASE_LADDER_LEN.sarah.science (frozen at init, before any gameplay pushes) rather than
+ // the live SCI_SARAH.length — LEVELS.sarah.science IS SCI_SARAH (same array, not a copy), so
+ // doDoneLevelUp('sarah','science') pushes synthetic rungs onto this very array as Sarah plays.
+ // Reading .length live would make Mirayah's src index drift with Sarah's unrelated progress.
+ const src=boost?SCI_SARAH[Math.min(boost-1,BASE_LADDER_LEN.sarah.science-1)]:L;
  const vs=shuf(src.vocab).slice(0,boost?src.vocab.length:2);
  blocks.push({h:'A. New words — say it, then draw it',items:vs.map((v,i)=>(i+1)+')  '+v[0]+'  —  '+v[1]),ungraded:true});
  const fs=shuf(src.facts).slice(0,boost?src.facts.length:4);
@@ -2111,10 +2115,14 @@ function levelRail(gk,sk){const lad=LEVELS[gk][sk],here=LEVEL[gk][sk];let r='<di
  const sciSaturated=sk==='science'&&gk!=='mirayah'&&typeof L.boost==='number'&&L.boost>=sciMaxUsefulBoost(L);
  /* Mirayah's science Independent Study now draws from SCI_SARAH (rung 1 upward, one rung per
     boost tier) instead of widening her own rung-10 bank — see ws_science_mirayah's `src`. Once
-    boost reaches SCI_SARAH.length, src pins to SCI_SARAH's own last rung, and that rung's own
-    sc/method arrays are already far smaller than boost by then, so the widening formula is
-    fully maxed the very same tier src pins — saturation point is simply SCI_SARAH.length. */
- const sciMirayahSaturated=sk==='science'&&gk==='mirayah'&&typeof L.boost==='number'&&L.boost>=SCI_SARAH.length;
+    boost reaches BASE_LADDER_LEN.sarah.science, src pins to SCI_SARAH's own last hand-authored
+    rung, and that rung's own sc/method arrays are already far smaller than boost by then, so the
+    widening formula is fully maxed the very same tier src pins — saturation point is simply
+    BASE_LADDER_LEN.sarah.science. Deliberately NOT the live SCI_SARAH.length: LEVELS.sarah.science
+    IS SCI_SARAH (same array), so doDoneLevelUp('sarah','science') grows it as Sarah plays her own
+    ladder — reading .length live would make this badge (and ws_science_mirayah's src index above)
+    silently depend on Sarah's unrelated progress instead of the fixed 12-rung hand-authored bank. */
+ const sciMirayahSaturated=sk==='science'&&gk==='mirayah'&&typeof L.boost==='number'&&L.boost>=BASE_LADDER_LEN.sarah.science;
  /* Sarah's English ladder-extension rungs plateau too: vt caps at 'expert' (boost>=3) and pt is
     already pinned to tier 4 by intensifyRung, but gc (Block D grammar-fix count) keeps growing
     arithmetically forever with no cap of its own — it's just silently truncated by slice() once
