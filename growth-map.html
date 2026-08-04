@@ -524,11 +524,13 @@ function intensifyRung(base,tier){
    string-pair banks), so ws_science_sarah/mirayah widen those SAME banks as boost rises instead
    (full vocab+facts, then guaranteed-hardest-first sc/method up to all items). That widening runs
    out once boost reaches each bank's own size — sc/method (the last knob left) stop changing once
-   boost>=length-1, since by then every item in the bank is already shown every time (only shuffle
-   order still varies). Past that point further Independent Study tiers are content-identical, so
+   boost>=length-2, since by then every item in the bank is already shown every time (only shuffle
+   order still varies; the -2 not -1 matches ws_science_sarah's scCount/meCount formula, which
+   starts real growth from the base count of 2 at boost=1, not boost=2 — see the boost+2 fix note
+   at scCount/meCount). Past that point further Independent Study tiers are content-identical, so
    levelRail() below must stop claiming indefinite escalation for a saturated science ladder — see
    growth-map-exhaustive-audit finding "science/mirayah — Independent Study tier escalation". */
-function sciMaxUsefulBoost(L){return Math.max((L.sc?L.sc.length:1)-1,(L.method?L.method.length:1)-1);}
+function sciMaxUsefulBoost(L){return Math.max((L.sc?L.sc.length:1)-2,(L.method?L.method.length:1)-2);}
 
 /* ===== STATE (this is your editable starting point) ===== */
 const LEVEL={
@@ -1652,11 +1654,17 @@ function ws_science_sarah(li){const L=SCI_SARAH[li];let blocks=[],ans=[];
  // and only ever see the easy end. Fix: always guarantee the hardest (last-index) item, same as the
  // boosted formula already does, and always serve 2 instead of 1 (hardest + one more at random) —
  // raising the thinking-vs-recall share (Blocks C+D) relative to Block B's fixed 4 recall facts.
- const scCount=boost?Math.min(L.sc.length,1+boost):Math.min(L.sc.length,2);
+ // boost+2 (not boost+1): the base (non-boosted) count is already 2, so growth has to start from
+ // 2, not 1 — boost+1 made boost=1's count equal the base count (2), so the very first Independent
+ // Study tier silently reused the same 2-item pool as the just-mastered rung before growing on the
+ // NEXT tier instead. See growth-map-exhaustive-audit finding "science/sarah — Independent Study
+ // tier 1 near-identical to base rung" (verified live: sc/method were identical or a coin-flip
+ // in ~50% of boost=1 trials vs base under the old +1 formula).
+ const scCount=boost?Math.min(L.sc.length,2+boost):Math.min(L.sc.length,2);
  const sc=[L.sc[L.sc.length-1]].concat(shuf(L.sc.slice(0,-1)).slice(0,scCount-1));
  blocks.push({h:'C. Think it through',items:sc.map(s=>s[0]),write:2});
  ans.push('C: '+sc.map(s=>s[1]).join(' | '));
- const meCount=boost?Math.min(L.method.length,1+boost):Math.min(L.method.length,2);
+ const meCount=boost?Math.min(L.method.length,2+boost):Math.min(L.method.length,2);
  const me=[L.method[L.method.length-1]].concat(shuf(L.method.slice(0,-1)).slice(0,meCount-1));
  blocks.push({h:'D. Like a scientist 🧪',items:me.map(m=>m[0]),write:3});
  ans.push('D: '+me.map(m=>m[1]).join(' | '));
