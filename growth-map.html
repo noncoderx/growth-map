@@ -252,10 +252,14 @@ const LEVELS={
    // widens the gap the mechanical way instead: gc jumps 8->10 (not 8->9), doubling Block D's growth
    // versus the old +1 step and pushing MTOTAL to 21 (~10.5% over rung6's 19) so mastery is measured
    // against a genuinely bigger grammar load, not just one more line. GRAMMAR.hard has 20 entries, so
-   // gc:10 is well within pool size. gc still ties 'Essay basics' below (10) rather than exceeding it —
-   // ties are already precedented on this ladder ('Vocab in context'/'Opinion & why' both gc:6, see
-   // rung3's comment above) and 'Essay basics' already differs from this rung via vt, so the tie
-   // doesn't recreate an identical-rung pair.
+   // gc:10 is well within pool size. NOTE: an earlier version of this comment claimed gc:10 tying
+   // 'Essay basics' below (also gc:10 at the time) was harmless because the two rungs differ via vt —
+   // that reasoning was wrong. Both rungs share gt:'hard' AND pt:3, so Block C (PASSAGES tier3, 8
+   // passages) and Block D (GRAMMAR.hard, gc lines) drew from byte-identical pools with byte-identical
+   // counts on both rungs; only Block A's vocab tier differed. Live generation confirmed MTOTAL
+   // (graded question count feeding the 80% mastery bar) was exactly 21 on both rungs, 30/30 runs each
+   // — a true plateau. Fixed by bumping rung 8's gc 10->11 (see that rung's comment) and cascading +1
+   // through rungs 9-12 so no new collision is introduced further up the ladder.
    // (see growth-map-exhaustive-audit finding, english/sarah rung 6 'Persuasive writing' -> rung 7
    // 'Structure & argument'.)
    {n:'Structure & argument', vt:'hard',  pt:3, gt:'hard', gc:10, write:'argument'},
@@ -269,8 +273,19 @@ const LEVELS={
    // vt goes hard→hard→harder→harder across rungs 6-9, monotonic non-decreasing — no regression into
    // Rhetoric & technique (rung9), which already sits at vt:'harder'. See growth-map-exhaustive-audit
    // finding, english/sarah rungs 6-8 (LEVELS.sarah.english[5..7]).
-   {n:'Essay basics',         vt:'harder',pt:3, gt:'hard', gc:10, write:'essay'},
-   {n:'Rhetoric & technique', vt:'harder',pt:3, gt:'hard', gc:11, write:'rhetoric', tech:1},
+   // gc:11 (was 10) — vt alone ('hard'->'harder') was carrying the entire rung7->rung8 escalation
+   // because both rungs also share gt:'hard'/pt:3/gc:10, so Block C (PASSAGES tier3) and Block D
+   // (GRAMMAR.hard) drew identical pools with identical counts on both mastery-gated rungs; live
+   // generation confirmed MTOTAL was exactly 21 on both, every run — a true plateau, the same
+   // vocab-tier-only-escalation bug this ladder's own history treats as insufficient on its own
+   // (commits 65fe819, 8eeb1c4). Fixed the same mechanical way as every other seam on this ladder:
+   // gc bumps 10->11 so Block D genuinely diverges from rung 7. GRAMMAR.hard has 20 entries, so gc:11
+   // stays well within pool size. This now collides with rung 9's gc:11 below, so rungs 9-12 each
+   // cascade +1 in turn (11->12, 12->13, 13->14, 14->15) — still comfortably under GRAMMAR.hard's
+   // 20-entry cap. (see growth-map-exhaustive-audit finding, english/sarah rung 7 'Structure &
+   // argument' -> rung 8 'Essay basics'.)
+   {n:'Essay basics',         vt:'harder',pt:3, gt:'hard', gc:11, write:'essay'},
+   {n:'Rhetoric & technique', vt:'harder',pt:3, gt:'hard', gc:12, write:'rhetoric', tech:1},
    // pt:4 on rungs 10-12 — reading was pinned at tier 3 from rung 5 all the way to rung 12 while
    // vt/gt/gc kept climbing, so READING flatlined for 8 straight rungs even though writing/grammar
    // never did. The tier-4 PASSAGES bank already existed (4 passages) but was only ever reachable
@@ -291,9 +306,9 @@ const LEVELS={
    // interview instead of pinned at 2 everywhere, so the technique-teaching content genuinely widens
    // rung-to-rung even though rungs 10-11 still necessarily share the 4-entry tier-4 passage pool
    // (there is no unused higher-tier passage bank to promote into, unlike vocab/technique).
-   {n:'Debate — both sides',  vt:'harder',pt:4, gt:'hard', gc:12, write:'debate',   tech:1},
-   {n:'Personal voice',       vt:'harder',pt:4, gt:'hard', gc:13, write:'personal', tech:2},
-   {n:'Interview reasoning',  vt:'expert',pt:4, gt:'hard', gc:14, write:'interview',tech:3}
+   {n:'Debate — both sides',  vt:'harder',pt:4, gt:'hard', gc:13, write:'debate',   tech:1},
+   {n:'Personal voice',       vt:'harder',pt:4, gt:'hard', gc:14, write:'personal', tech:2},
+   {n:'Interview reasoning',  vt:'expert',pt:4, gt:'hard', gc:15, write:'interview',tech:3}
   ]
  },
  mirayah:{
@@ -1571,6 +1586,13 @@ const WRITE_TASKS={
 // 4,5,6,7), which pushed rung8's gc — and this seam's numbers — up in turn: gc now runs 11→12→13→14
 // across rungs 9-12 (still within GRAMMAR.hard's 20-item bank) so MTOTAL never plateaus anywhere
 // rung1→rung12 (see growth-map-exhaustive-audit finding, english/sarah rung4→rung5 Block D).
+// SUPERSEDED AGAIN: the "never plateaus" claim above was itself wrong — rung 7 ('Structure & argument')
+// and rung 8 ('Essay basics') independently tied at gc:10 (both drew GRAMMAR.hard with the same count,
+// on top of already-shared pt:3/gt:'hard'), so MTOTAL was byte-identical (21==21, 30/30 live runs) at
+// that seam despite this comment's claim. Fixed by bumping rung 8's gc 10->11 and cascading +1 through
+// rungs 9-12; gc now runs 11→12→13→14→15 across rungs 8-12 (rung 7 stays at gc:10), still within
+// GRAMMAR.hard's 20-item bank (see growth-map-exhaustive-audit finding, english/sarah rung 7 ->
+// rung 8, and each rung's own comment above for the per-rung rationale).
 const RHETORIC=[
  {name:'Rhetorical question',explain:'a question asked to make a point, not to get a real answer',example:'“Isn’t it obvious that reading makes you smarter?”'},
  {name:'Rule of three',explain:'listing three things together to make an idea feel complete and powerful',example:'“Fast, fun and unforgettable.”'},
