@@ -756,7 +756,7 @@ const CHAL={
     ['⭐ A code uses 2 different letters chosen from A, B, C, D, and the order matters (AB is different from BA). How many different 2-letter codes are possible?','12 (4 × 3)']]
 };
 
-function m_algebra(L){const B=[],a=[];const bo=L.boost||0;
+function m_algebra(L){const B=[],a=[];const ch=L.chal||1,bo=(L.boost||0)+Math.max(0,ch-4)*3+(L.comp?2:0);
  if(L.algebra>=1){const x=R(3,12+bo),b=R(2,15+2*bo);B.push('1)  ▢ + '+b+' = '+(x+b)+'      ▢ = ____');a.push('▢ = '+x);
    const y=R(2,9+bo),c=R(2,9+bo);B.push('2)  ▢ × '+c+' = '+(y*c)+'      ▢ = ____');a.push('▢ = '+y);}
  if(L.algebra>=2){const x=R(2,9+bo),m=R(2,5+bo),c=R(1,12+2*bo);B.push('3)  '+m+'x + '+c+' = '+(m*x+c)+'      x = ____');a.push('x = '+x);
