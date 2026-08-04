@@ -1984,7 +1984,8 @@ function levelRail(gk,sk){const lad=LEVELS[gk][sk],here=LEVEL[gk][sk];let r='<di
     value, so comparing it straight against the bank length (no formula reversal needed) tells us
     exactly when further boosting stops changing the graded content — see growth-map-exhaustive-
     audit finding "LEVELS.sarah.english — Independent Study ladder-extension saturation vs. UI
-    honesty" (verified live: MTOTAL plateaus at 36 from boost=10 onward). */
+    honesty" (verified live: gc first reaches GRAMMAR.hard's 20-item bank size at boost=3, and
+    MTOTAL plateaus at 34 from boost=3 onward). */
  const engSarahSaturated=sk==='english'&&gk==='sarah'&&typeof L.boost==='number'&&L.gc>=GRAMMAR[effTier(GT_ORDER,L.gt,L.boost)].length;
  /* Mirayah's English ladder-extension rungs plateau too: ws_english_mirayah's boosted-mini path
     (storyCount=min(MIRA_ALL_STORIES.length,1+boost), qsCount=min(storyCount,1+floor(boost/2))) is
