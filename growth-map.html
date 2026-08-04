@@ -1283,7 +1283,13 @@ function ws_maths_mirayah(li){const L=LEVELS.mirayah.maths[li];let blocks=[],ans
  // J reasoning — Beast-Academy-Grade-2-style non-routine thinking, on EVERY rung (there was no
  // thinking block at all before this — every block above is routine compute-the-answer). Scales
  // gently off L.bonds/L.addMax so the numbers grow with the rung, same discipline as blocks B/C/G.
- {const cap=Math.max(L.bonds||10,L.addMax||10),kind=R(0,2);
+ // L.bonds/addMax are pinned flat (100/99) across rungs 7-9 ("Regrouping"->"Two-step (little)"),
+ // so Math.max(bonds,addMax) alone froze this block's magnitude for three straight mastery-gated
+ // rungs (growth-map-exhaustive-audit finding, verified live: 600+ samples gave identical 2-50
+ // ranges on all three). L.mulMax already escalates 40->60->90 across exactly these rungs but was
+ // dominated by bonds under Math.max — folding it in additively (not via Math.max) is what actually
+ // moves the needle, since it never exceeds bonds/addMax on its own.
+ {const cap=Math.max(L.bonds||10,L.addMax||10)+(L.mulMax||0),kind=R(0,2);
   if(kind===0){const step=P(L.count||[2]),start=R(1,3)*step,seq=[start,start+step,start+step*2];
    blocks.push({h:'J. Pattern puzzle',items:[seq.join(', ')+', ____, ____   — what is the rule, and what are the next two numbers?']});
    ans.push('J: rule = +'+step+'; '+(start+step*3)+', '+(start+step*4));
