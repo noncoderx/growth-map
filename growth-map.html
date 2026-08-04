@@ -1030,7 +1030,7 @@ function ws_maths_mirayah(li){const L=LEVELS.mirayah.maths[li];let blocks=[],ans
  // tiers) keeps growing right alongside addMax, the same "no ceiling" behavior Block A already has.
  // Standard next step after 3-digit addition (Singapore P3), not a fabricated skill.
  {let ad=[],a=[];for(let i=0;i<6;i++){const cap=L.addMax||10;let x,y;
-  if(L.regroup>=3){const hj=Math.max(1,Math.round(cap/100)),xo=R(1,9),yo=R(10-xo,9),xt=R(5,9),yt=R(Math.max(1,9-xt),9);x=hj*100+xt*10+xo;y=yt*10+yo;}
+  if(L.regroup>=3){const hj=Math.max(1,Math.round(cap/100)),h=R(1,hj),xo=R(1,9),yo=R(10-xo,9),xt=R(5,9),yt=R(Math.max(1,9-xt),9);x=h*100+xt*10+xo;y=yt*10+yo;}
   else if(L.regroup>=2){const xo=R(1,9),yo=R(10-xo,9),xt=R(4,9),yt=R(Math.max(1,9-xt),9);x=xt*10+xo;y=yt*10+yo;}
   else if(L.regroup){const xo=R(1,9),yo=R(10-xo,9),tmax=Math.max(1,Math.floor((cap-xo-yo)/20)),xt=R(1,tmax),yt=R(1,tmax);x=xt*10+xo;y=yt*10+yo;}
   else{x=R(2,Math.floor(cap*0.6));y=R(2,Math.max(2,cap-x));}
@@ -1145,7 +1145,7 @@ function ws_maths_mirayah(li){const L=LEVELS.mirayah.maths[li];let blocks=[],ans
   if(L.story>=2){
    const kind=R(0,2),addCap=L.addMax||60,subCap=L.subMax||addCap,bridge=L.regroup>=2,bridge3=L.regroup>=3;
    if(kind===0){let a,b;
-    if(bridge3){const hj=Math.max(1,Math.round(addCap/100)),ao=R(1,9),bo=R(10-ao,9),at=R(5,9),bt=R(Math.max(1,9-at),9);a=hj*100+at*10+ao;b=bt*10+bo;}
+    if(bridge3){const hj=Math.max(1,Math.round(addCap/100)),h=R(1,hj),ao=R(1,9),bo=R(10-ao,9),at=R(5,9),bt=R(Math.max(1,9-at),9);a=h*100+at*10+ao;b=bt*10+bo;}
     else if(bridge){const ao=R(1,9),bo=R(10-ao,9),at=R(4,9),bt=R(Math.max(1,9-at),9);a=at*10+ao;b=bt*10+bo;}
     else{a=R(20,Math.max(21,addCap-15));b=R(10,Math.max(11,addCap-a));}
     blocks.push({h:'G. Story sum',items:[P(NAMES)+' collected '+a+' shells and found '+b+' more. How many shells now?  ____'],write:1});ans.push('G: '+(a+b));}
@@ -1155,7 +1155,7 @@ function ws_maths_mirayah(li){const L=LEVELS.mirayah.maths[li];let blocks=[],ans
     else{a=R(Math.floor(subCap*0.5),subCap);b=R(10,a-5);}
     blocks.push({h:'G. Story sum',items:[P(NAMES)+' had '+a+' bangles and gave away '+b+'. How many bangles left?  ____'],write:1});ans.push('G: '+(a-b));}
    else{let start,total;
-    if(bridge3){const hj=Math.max(1,Math.round(addCap/100)),ao=R(1,9),bo=R(10-ao,9),at=R(5,9),bt=R(Math.max(1,9-at),9);start=hj*100+at*10+ao;total=start+(bt*10+bo);}
+    if(bridge3){const hj=Math.max(1,Math.round(addCap/100)),h=R(1,hj),ao=R(1,9),bo=R(10-ao,9),at=R(5,9),bt=R(Math.max(1,9-at),9);start=h*100+at*10+ao;total=start+(bt*10+bo);}
     else if(bridge){const ao=R(1,9),bo=R(10-ao,9),at=R(4,9),bt=R(Math.max(1,9-at),9);start=at*10+ao;total=start+(bt*10+bo);}
     else{start=R(20,50);total=R(start+10,Math.max(start+11,addCap));}
     blocks.push({h:'G. Story sum',items:[start+' birds were sitting on a tree. A few more joined. Now there are '+total+' birds. How many birds joined?  ____'],write:1});ans.push('G: '+(total-start));}
