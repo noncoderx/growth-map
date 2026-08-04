@@ -694,7 +694,12 @@ function m_pattern(L){const t=L.patt||'arith';
  if(t==='geo'){const tier=L.dec?2:(L.frac?1:0),st=R(2+tier,4+2*tier),r=P(tier>=2?[3,4]:(tier>=1?[2,3,4]:[2,3]));const s=[st,st*r,st*r*r,st*r*r*r];return{seq:s,next:[s[3]*r,s[3]*r*r],rule:'multiply by '+r};}
  if(t==='tri'){const st=R(1,4),T=n=>n*(n+1)/2;const s=[T(st),T(st+1),T(st+2),T(st+3)];return{seq:s,next:[T(st+4),T(st+5)],rule:'add 1 more each time (triangular numbers)'};}
  if(t==='seq'){const tier=L.algebra>=1?2:(L.pct?1:0),b=R(1+tier,3+2*tier);const f=n=>n*n+b;const s=[f(1),f(2),f(3),f(4)];return{seq:s,next:[f(5),f(6)],rule:'square the position, then add '+b};}
- if(t==='quad'){const tier=L.proof?2:(L.comp?1:0),c=R(1+tier,4+tier);const f=n=>n*(n+c);const s=[f(1),f(2),f(3),f(4)];return{seq:s,next:[f(5),f(6)],rule:'position × (position + '+c+')'};}
+ /* quad branch — tier was pinned at 2 forever once L.proof/L.comp go truthy (Competition
+    heuristics rung 11, The quantitative spike rung 12), so c=R(3,6) never widened on Independent
+    Study clones past rung 12 (intensifyRung only scales numeric knobs, never the truthiness of
+    proof/comp). Same fix pattern as m_bigmul/m_placevalue: fold L.boost into the range ceiling so
+    Block D keeps escalating instead of plateauing. */
+ if(t==='quad'){const tier=L.proof?2:(L.comp?1:0),c=R(1+tier,4+tier+(L.boost||0));const f=n=>n*(n+c);const s=[f(1),f(2),f(3),f(4)];return{seq:s,next:[f(5),f(6)],rule:'position × (position + '+c+')'};}
  const st=L.mul2?R(8,20):R(2,6),d=L.mul2?R(4,9):R(2,5);const s=[st,st+d,st+2*d,st+3*d];return{seq:s,next:[st+4*d,st+5*d],rule:'add '+d};}
 
 function m_mistake(L){const easy=[
