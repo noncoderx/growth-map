@@ -224,7 +224,17 @@ const LEVELS={
    {n:'Multi-paragraph',      vt:'mid',   pt:3, gt:'hard', gc:7, write:'multi'},
    {n:'Persuasive writing',   vt:'hard',  pt:3, gt:'hard', gc:8, write:'persuade'},
    {n:'Structure & argument', vt:'hard',  pt:3, gt:'hard', gc:9, write:'argument'},
-   {n:'Essay basics',         vt:'hard',  pt:3, gt:'hard', gc:10, write:'essay'},
+   // vt:'harder' (was 'hard') — rungs 6-8 (this rung and the two above) previously all set vt:'hard'
+   // AND pt:3 identically, so Block A (VOCAB.hard) and Block C (PASSAGES tier3) drew from the exact
+   // same pools on all three mastery-gated rungs; only gc moved. Promoting Essay basics to VOCAB.harder
+   // one rung early (that bank already exists, feeding rung 9-12 next) gives this rung a genuinely
+   // different Block A pool than Persuasive writing/Structure & argument, and its persuasive/essay-register
+   // words (persuasive, coherent, articulate, concede, rebuttal, credible, anecdote) fit "Essay basics"
+   // at least as well as the hard-tier folk-tale words they replace. pt stays 3 here (not promoted) so
+   // vt goes hard→hard→harder→harder across rungs 6-9, monotonic non-decreasing — no regression into
+   // Rhetoric & technique (rung9), which already sits at vt:'harder'. See growth-map-exhaustive-audit
+   // finding, english/sarah rungs 6-8 (LEVELS.sarah.english[5..7]).
+   {n:'Essay basics',         vt:'harder',pt:3, gt:'hard', gc:10, write:'essay'},
    {n:'Rhetoric & technique', vt:'harder',pt:3, gt:'hard', gc:11, write:'rhetoric', tech:1},
    // pt:4 on rungs 10-12 — reading was pinned at tier 3 from rung 5 all the way to rung 12 while
    // vt/gt/gc kept climbing, so READING flatlined for 8 straight rungs even though writing/grammar
@@ -1114,14 +1124,16 @@ const VOCAB={
  // (ch.3 reflective, ch.5 lush/sheltering, ch.6 invented, ch.8 teamwork, ch.9 superiority, ch.10 countryside, ch.12 majestic).
  mid:[['reluctant','not wanting to do something'],['magnificent','very grand and impressive'],['peculiar','strange or odd'],['anxious','worried or uneasy'],['fragile','easily broken'],['hesitate','to pause before acting'],['generous','happy to give and share'],['mischievous','playfully causing trouble'],
   ['reflective','able to shine light back, so it can be seen in the dark'],['lush','green and growing thickly'],['sheltering','giving protection from harm or bad weather'],['invented','made something new for the first time'],['teamwork','people working together toward one goal'],['superiority','being better or greater than others'],['majestic','grand and deeply impressive'],['countryside','open land with farms and fields, away from a city']],
- // hard tier (rung6-8 vt, "Persuasive writing"/"Structure & argument"/"Essay basics"): base 8 + 8 new.
+ // hard tier (rung6-7 vt, "Persuasive writing"/"Structure & argument"): base 8 + 8 new. "Essay basics"
+ // (rung8) was moved to VOCAB.harder below — see LEVELS.sarah.english[7] comment.
  // New words are grounded in / thematically paired with the new tier-3 passages below (Hekko-folk-tale
  // courage → valiant/wary; "One Thing at a Time" poem → diligent; "The Tinkling Bells" honesty theme →
  // integrity; "Together We Can" teamwork poem → steadfast; "The Old Stag" ch.5 → tranquil; countryside-move
  // story → bewildered; general → empathetic. Definitions hand-written, same discipline as the base 8.
  hard:[['ferocious','fierce and violent'],['cunning','clever in a sly way'],['triumphant','joyful after a victory'],['suspicious','feeling something is wrong'],['feeble','weak and frail'],['vast','extremely large'],['resilient','able to recover quickly'],['deliberate','done on purpose and carefully'],
   ['valiant','brave and determined, especially in a difficult situation'],['diligent','careful and steady in your effort or work'],['integrity','being honest and having strong moral principles'],['wary','cautious because you sense possible danger'],['steadfast','loyal and unchanging, even when it is hard'],['tranquil','very calm, peaceful and still'],['bewildered','very confused, unsure what is happening'],['empathetic','able to understand and share someone else’s feelings']],
- // harder tier (rung9-12 vt: "Rhetoric & technique"/"Debate"/"Personal voice"/"Interview reasoning"):
+ // harder tier (rung8-12 vt: "Essay basics"/"Rhetoric & technique"/"Debate"/"Personal voice"/
+ // "Interview reasoning"):
  // base 8 + 8 new. New words are chosen for the specific skill each of these 4 rungs drills — making
  // and weighing an argument, speaking in your own voice, reasoning under questioning — rather than tied
  // to a passage theme (these rungs' passages are the same shared tier-3 pool, not new rung-specific texts).
