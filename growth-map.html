@@ -209,12 +209,12 @@ const LEVELS={
    {n:'Fractions begin',        wm:12, mul2:1, frac:1, s:3, bar:'frac', patt:'geo', chal:2, bignum:2, coord:2},
    {n:'Decimals & money',       wm:12, mul2:1, dec:1,  s:3, bar:'dec',  patt:'geo', chal:3, bignum:2, coord:2},
    {n:'Multiplication mastery', wm:12, longmul:1, frac:1,   s:3, bar:'frac', patt:'tri',  chal:3, bignum:3, coord:3, bigmul:1},
-   {n:'Ratio & proportion',     wm:12, longmul:1, ratio:1,  s:3, bar:'ratio',patt:'seq',  chal:3, bignum:3, coord:3, bigmul:1, bnChal:4, bmChal:4},
+   {n:'Ratio & proportion',     wm:12, longmul:1, ratio:1,  s:3, bar:'ratio',patt:'seq',  chal:3, bignum:3, coord:3, coordChal:4, bigmul:1, bnChal:4, bmChal:4},
    {n:'Percentages',            wm:12, longmul:1, pct:1,    s:3, bar:'pct',  patt:'seq',  chal:4, barChal:5, bignum:4, coord:4, bigmul:2},
-   {n:'Pre-algebra',            wm:12, longmul:1, algebra:1,s:3, bar:'ratio',patt:'seq',  chal:4, bignum:4, coord:4, bigmul:2, bnChal:5, bmChal:5},
-   {n:'Algebra & geometry',     wm:12, longmul:1, algebra:2, geom:1,   s:3, bar:'pct',  patt:'quad', chal:5, bignum:5, coord:4, bigmul:3},
-   {n:'Competition heuristics', wm:12, longmul:1, algebra:3, geom:1, comp:1, s:3, bar:'ratio3', patt:'quad', chal:5, bignum:5, coord:4, bigmul:3, bnChal:6, bmChal:6},
-   {n:'The quantitative spike', wm:12, longmul:1, algebra:3, geom:1, comp:1, proof:1, logic:1, s:3, bar:'pct', patt:'quad', chal:6, bignum:6, coord:4, bigmul:4}
+   {n:'Pre-algebra',            wm:12, longmul:1, algebra:1,s:3, bar:'ratio',patt:'seq',  chal:4, bignum:4, coord:4, coordChal:5, bigmul:2, bnChal:5, bmChal:5},
+   {n:'Algebra & geometry',     wm:12, longmul:1, algebra:2, geom:1,   s:3, bar:'pct',  patt:'quad', chal:5, bignum:5, coord:4, coordChal:6, bigmul:3},
+   {n:'Competition heuristics', wm:12, longmul:1, algebra:3, geom:1, comp:1, s:3, bar:'ratio3', patt:'quad', chal:5, bignum:5, coord:4, coordChal:7, bigmul:3, bnChal:6, bmChal:6},
+   {n:'The quantitative spike', wm:12, longmul:1, algebra:3, geom:1, comp:1, proof:1, logic:1, s:3, bar:'pct', patt:'quad', chal:6, bignum:6, coord:4, coordChal:8, bigmul:4}
   ],
   english:[
    {n:'Comprehension',        vt:'easy',  pt:1, gt:'easy', gc:4, write:'para'},
@@ -856,20 +856,28 @@ function m_bigmul(L){const tier=Math.min(L.bigmul||1,4);
 
 /* Coordinate geometry — school already covers plotting in all four quadrants; coord tiers add
    reflections (tier 2), axis-aligned distance (tier 3), then general-point distance via a
-   Pythagorean-triple grid count (tier 4, kept to exact triples so no square roots are needed). */
-function m_coords(L){const tier=Math.min(L.coord||1,4);const B=[],a=[];let idx=0;
+   Pythagorean-triple grid count (tier 4, kept to exact triples so no square roots are needed).
+   coordChal — L.coord only advances every OTHER rung (1,1,2,2,3,3,4,4,4,4,4 across rungs 2-12),
+   and once it caps at tier 4 (rungs 8-12) plain L.chal repeats too (4,4,5,5,6), so several
+   adjacent rungs shared byte-identical Block K output. coordChal is an explicit per-block
+   override (same convention as bnChal/bmChal/barChal) set only where L.chal collides between
+   neighbours (rung 7, and rungs 9-12 which must climb 5-6-7-8 to stay ahead of rung 8's
+   natural chal:4, since chal alone only reaches 4,4,5,5,6 across that span); every other rung
+   falls back to L.chal via ch=L.coordChal||L.chal. bo now also widens the tier 1-3 point/
+   distance range (mag), not just the tier-4 triangle block, so the tier-1..3 same-chal-tier
+   pairs (rungs 2-3, 4-5, 6-7) genuinely differ too, not just tier 4. */
+function m_coords(L){const tier=Math.min(L.coord||1,4);const ch=L.coordChal||L.chal||1,bo=Math.max(0,ch-tier),mag=9+3*bo;const B=[],a=[];let idx=0;
  const quad=(x,y)=>{if(x===0||y===0)return 'on an axis';if(x>0&&y>0)return 'Quadrant I';if(x<0&&y>0)return 'Quadrant II';if(x<0&&y<0)return 'Quadrant III';return 'Quadrant IV';};
- const pts=shuf([[R(1,9),R(1,9)],[-R(1,9),R(1,9)],[-R(1,9),-R(1,9)],[R(1,9),-R(1,9)]]).slice(0,2);
+ const pts=shuf([[R(1,mag),R(1,mag)],[-R(1,mag),R(1,mag)],[-R(1,mag),-R(1,mag)],[R(1,mag),-R(1,mag)]]).slice(0,2);
  pts.forEach(p=>{B.push((++idx)+')  Which quadrant is the point ('+p[0]+', '+p[1]+') in?');a.push(quad(p[0],p[1]));});
- if(tier>=2){const px=R(1,9)*P([1,-1]),py=R(1,9)*P([1,-1]),axis=P(['x','y']),rx=axis==='x'?px:-px,ry=axis==='x'?-py:py;
+ if(tier>=2){const px=R(1,mag)*P([1,-1]),py=R(1,mag)*P([1,-1]),axis=P(['x','y']),rx=axis==='x'?px:-px,ry=axis==='x'?-py:py;
   B.push((++idx)+')  Reflect the point ('+px+', '+py+') across the '+axis+'-axis. What is the new point?');a.push('('+rx+', '+ry+')');}
- if(tier>=3){if(P(['row','col'])==='row'){const y=R(-9,9),x1=R(-9,9),x2=R(-9,9);B.push((++idx)+')  Find the distance between ('+x1+', '+y+') and ('+x2+', '+y+').');a.push(String(Math.abs(x1-x2)));}
-  else{const x=R(-9,9),y1=R(-9,9),y2=R(-9,9);B.push((++idx)+')  Find the distance between ('+x+', '+y1+') and ('+x+', '+y2+').');a.push(String(Math.abs(y1-y2)));}}
+ if(tier>=3){if(P(['row','col'])==='row'){const y=R(-mag,mag),x1=R(-mag,mag),x2=R(-mag,mag);B.push((++idx)+')  Find the distance between ('+x1+', '+y+') and ('+x2+', '+y+').');a.push(String(Math.abs(x1-x2)));}
+  else{const x=R(-mag,mag),y1=R(-mag,mag),y2=R(-mag,mag);B.push((++idx)+')  Find the distance between ('+x+', '+y1+') and ('+x+', '+y2+').');a.push(String(Math.abs(y1-y2)));}}
  if(tier>=4){
-  // bo — once the quadrant/reflection/distance tier caps out at 4 (rungs 8-12 all set coord:4),
-  // L.chal (4,4,5,5,6 across those five rungs) keeps widening this block instead of freezing it,
-  // same pattern m_geometry already uses (ch-driven bo offset) for its own tier ceiling.
-  const bo=Math.max(0,(L.chal||4)-4),range=6+3*bo;
+  // range reuses the same bo computed above so the tier-4 triangle block keeps climbing in
+  // lockstep with the tier 1-3 widening instead of a second, separately-derived offset.
+  const range=6+3*bo;
   const triplePool=bo>=1?[[3,4,5],[6,8,10],[5,12,13],[9,12,15],[8,15,17],[7,24,25]]:[[3,4,5],[6,8,10],[5,12,13],[9,12,15]];
   const[dx,dy,dist]=P(triplePool),x1=R(-range,range),y1=R(-range,range),x2=x1+dx*P([1,-1]),y2=y1+dy*P([1,-1]);
   B.push((++idx)+')  Point A is at ('+x1+', '+y1+') and point B is at ('+x2+', '+y2+'). Count the horizontal and vertical steps between them, then use those as the two shorter sides of a right triangle to find the straight-line distance AB.');
