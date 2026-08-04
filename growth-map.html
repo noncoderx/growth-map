@@ -272,7 +272,7 @@ const LEVELS={
    {n:'Regrouping',         addMax:99, subMax:99, bonds:100, count:[10],      story:2, shapes:2, place:1, regroup:1, bondsForm:2, bondsReps:6},
    {n:'Groups of 2·5·10',   addMax:99, subMax:99, bonds:100, count:[2,5,10],  story:2, shapes:0, mul:1, mulMax:40, regroup:1, bondsForm:2, bondsReps:7},
    {n:'Two-step (little)',  addMax:99, subMax:99, bonds:100, count:[2,5,10],  story:2, shapes:0, mul:1, mulMax:60, twostep:1, regroup:2, bondsForm:2, bondsReps:8},
-   {n:'Bridge to big-girl', addMax:99, subMax:99, bonds:100, count:[3,4,6],   story:2, shapes:0, mul:1, mulMax:90, twostep:2, regroup:3, bondsForm:2, bondsReps:9}
+   {n:'Bridge to big-girl', addMax:900, subMax:900, bonds:100, count:[3,4,6],   story:2, shapes:0, mul:1, mulMax:90, twostep:2, regroup:3, bondsForm:2, bondsReps:9}
   ],
   english:[
    {n:'Sight words',      wtier:'b', mini:0, write:'word'},
@@ -968,10 +968,12 @@ function ws_maths_mirayah(li){const L=LEVELS.mirayah.maths[li];let blocks=[],ans
  // this >=3 branch, since regroup only grows) kept scaling addMax upward (99→114→...→396+) while this
  // block's actual output stayed pinned to the same ~100-199+10-99 range forever (see audit finding).
  // Fixed: the hundreds digit is now drawn from a range derived from addMax (hj), so as the ladder
- // extends and addMax genuinely grows, x's hundreds place grows with it. hj=1 at addMax:99 (rung 10's
- // own hand-authored value) reproduces the exact original 100+xt*10+xo range unchanged.
+ // extends and addMax genuinely grows, x's hundreds place grows with it. Rung 10's own hand-authored
+ // value is now addMax:900 (a deliberate "bridge to big numbers" widening), so hj computes to a flat
+ // 8 (capped by Math.min(8,...) to avoid overflowing into a 4-digit sum) — every item on this rung
+ // has x in the 800s, not the original ~100-199 range from when addMax was 99.
  {let ad=[],a=[];for(let i=0;i<6;i++){const cap=L.addMax||10;let x,y;
-  if(L.regroup>=3){const hj=Math.max(1,Math.round(cap/100)),xo=R(1,9),yo=R(10-xo,9),xt=R(5,9),yt=R(Math.max(1,9-xt),9);x=hj*100+xt*10+xo;y=yt*10+yo;}
+  if(L.regroup>=3){const hj=Math.max(1,Math.min(8,Math.round(cap/100))),xo=R(1,9),yo=R(10-xo,9),xt=R(5,9),yt=R(Math.max(1,9-xt),9);x=hj*100+xt*10+xo;y=yt*10+yo;}
   else if(L.regroup>=2){const xo=R(1,9),yo=R(10-xo,9),xt=R(4,9),yt=R(Math.max(1,9-xt),9);x=xt*10+xo;y=yt*10+yo;}
   else if(L.regroup){const xo=R(1,9),yo=R(10-xo,9),tmax=Math.max(1,Math.floor((cap-xo-yo)/20)),xt=R(1,tmax),yt=R(1,tmax);x=xt*10+xo;y=yt*10+yo;}
   else{x=R(2,Math.floor(cap*0.6));y=R(2,Math.max(2,cap-x));}
@@ -992,10 +994,12 @@ function ws_maths_mirayah(li){const L=LEVELS.mirayah.maths[li];let blocks=[],ans
  // harder step in the same NCERT ch.6 borrowing progression, not new content.
  // subMax-blind past rung 10 — same bug as Block B: h was hardcoded R(1,3) regardless of subMax, so
  // every synthetic Independent Study rung (permanently regroup>=3) kept x pinned to {100,200,300} even
- // as subMax kept climbing past 99. Fixed: h's ceiling now derives from subMax (hj), floored at the
- // original 3 so rung 10's own hand-authored output (subMax:99) is reproduced unchanged.
+ // as subMax kept climbing past 99. Fixed: h's ceiling now derives from subMax (hj), floored at 3.
+ // Rung 10's own hand-authored value is now subMax:900, so hj computes to a flat 9 (capped by
+ // Math.min(9,...) to avoid overflowing into a 4-digit minuend) — every item on this rung has x in
+ // {100,200,...,900}, not the original {100,200,300} range from when subMax was 99.
  if(L.subMax){let sb=[],a=[];for(let i=0;i<6;i++){const cap=L.subMax;let x,y;
-  if(L.regroup>=3){const hj=Math.max(3,Math.round(cap/100)),h=R(1,hj);x=h*100;y=R(11,89);}
+  if(L.regroup>=3){const hj=Math.max(3,Math.min(9,Math.round(cap/100))),h=R(1,hj);x=h*100;y=R(11,89);}
   else if(L.regroup>=2){const xo=R(0,8),yo=R(xo+1,9),yt=R(1,9);x=100+xo;y=yt*10+yo;}
   else if(L.regroup){const xo=R(0,8),yo=R(xo+1,9),tmax=Math.max(2,Math.floor(cap/10)),xt=R(2,tmax),yt=R(1,xt-1);x=xt*10+xo;y=yt*10+yo;}
   else{x=R(Math.floor(cap*0.4),cap);y=R(1,x-1);}
@@ -1058,23 +1062,24 @@ function ws_maths_mirayah(li){const L=LEVELS.mirayah.maths[li];let blocks=[],ans
  // addMax/subMax-blind past rung 10 — same bug as Blocks B/C: all three bridge3 kinds hardcoded their
  // hundreds digit (100 flat, or h=R(1,3)) regardless of how far addCap/subCap grew on synthetic
  // Independent Study rungs (permanently regroup>=3 once the ladder extends past rung 10). Fixed with
- // the exact same hj-derived-from-cap trick as Block B/C (floored to reproduce rung 10's own
- // hand-authored output unchanged at addMax/subMax:99).
+ // the exact same hj-derived-from-cap trick as Block B/C (capped at 8/9 to avoid 4-digit overflow).
+ // Rung 10's own hand-authored addMax/subMax is now 900 (not 99), so hj computes to a flat 8/9 on
+ // this rung too — matching Block B/C's behavior, not the original addMax/subMax:99 output.
  if(L.story){
   if(L.story>=2){
    const kind=R(0,2),addCap=L.addMax||60,subCap=L.subMax||addCap,bridge=L.regroup>=2,bridge3=L.regroup>=3;
    if(kind===0){let a,b;
-    if(bridge3){const hj=Math.max(1,Math.round(addCap/100)),ao=R(1,9),bo=R(10-ao,9),at=R(5,9),bt=R(Math.max(1,9-at),9);a=hj*100+at*10+ao;b=bt*10+bo;}
+    if(bridge3){const hj=Math.max(1,Math.min(8,Math.round(addCap/100))),ao=R(1,9),bo=R(10-ao,9),at=R(5,9),bt=R(Math.max(1,9-at),9);a=hj*100+at*10+ao;b=bt*10+bo;}
     else if(bridge){const ao=R(1,9),bo=R(10-ao,9),at=R(4,9),bt=R(Math.max(1,9-at),9);a=at*10+ao;b=bt*10+bo;}
     else{a=R(20,Math.max(21,addCap-15));b=R(10,Math.max(11,addCap-a));}
     blocks.push({h:'G. Story sum',items:[P(NAMES)+' collected '+a+' shells and found '+b+' more. How many shells now?  ____'],write:1});ans.push('G: '+(a+b));}
    else if(kind===1){let a,b;
-    if(bridge3){const hj=Math.max(3,Math.round(subCap/100)),h=R(1,hj);a=h*100;b=R(11,89);}
+    if(bridge3){const hj=Math.max(3,Math.min(9,Math.round(subCap/100))),h=R(1,hj);a=h*100;b=R(11,89);}
     else if(bridge){const xo=R(0,8),yo=R(xo+1,9),yt=R(1,9);a=100+xo;b=yt*10+yo;}
     else{a=R(Math.floor(subCap*0.5),subCap);b=R(10,a-5);}
     blocks.push({h:'G. Story sum',items:[P(NAMES)+' had '+a+' bangles and gave away '+b+'. How many bangles left?  ____'],write:1});ans.push('G: '+(a-b));}
    else{let start,total;
-    if(bridge3){const hj=Math.max(1,Math.round(addCap/100)),ao=R(1,9),bo=R(10-ao,9),at=R(5,9),bt=R(Math.max(1,9-at),9);start=hj*100+at*10+ao;total=start+(bt*10+bo);}
+    if(bridge3){const hj=Math.max(1,Math.min(8,Math.round(addCap/100))),ao=R(1,9),bo=R(10-ao,9),at=R(5,9),bt=R(Math.max(1,9-at),9);start=hj*100+at*10+ao;total=start+(bt*10+bo);}
     else if(bridge){const ao=R(1,9),bo=R(10-ao,9),at=R(4,9),bt=R(Math.max(1,9-at),9);start=at*10+ao;total=start+(bt*10+bo);}
     else{start=R(20,50);total=R(start+10,Math.max(start+11,addCap));}
     blocks.push({h:'G. Story sum',items:[start+' birds were sitting on a tree. A few more joined. Now there are '+total+' birds. How many birds joined?  ____'],write:1});ans.push('G: '+(total-start));}
