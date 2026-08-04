@@ -1121,7 +1121,7 @@ function ws_maths_mirayah(li){const L=LEVELS.mirayah.maths[li];let blocks=[],ans
  // J reasoning — Beast-Academy-Grade-2-style non-routine thinking, on EVERY rung (there was no
  // thinking block at all before this — every block above is routine compute-the-answer). Scales
  // gently off L.bonds/L.addMax so the numbers grow with the rung, same discipline as blocks B/C/G.
- {const cap=L.bonds||L.addMax||10,kind=R(0,2);
+ {const cap=Math.max(L.bonds||10,L.addMax||10),kind=R(0,2);
   if(kind===0){const step=P(L.count||[2]),start=R(1,3)*step,seq=[start,start+step,start+step*2];
    blocks.push({h:'J. Pattern puzzle',items:[seq.join(', ')+', ____, ____   — what is the rule, and what are the next two numbers?']});
    ans.push('J: rule = +'+step+'; '+(start+step*3)+', '+(start+step*4));
