@@ -267,12 +267,12 @@ const LEVELS={
    {n:'Bonds to 10',        addMax:16, subMax:15, bonds:10, count:[5],      story:0, shapes:1, bondsReps:9, bondsForm:1},
    {n:'Add & take to 20',   addMax:20, subMax:20, bonds:20, count:[2,5],     story:1, shapes:1},
    {n:'Teen numbers',       addMax:20, subMax:20, bonds:20, count:[2,5,10],  story:1, shapes:2, place:1, bondsForm:1, bondsReps:8},
-   {n:'Within 100',         addMax:80, subMax:80, bonds:50, count:[5,10],    story:1, shapes:2, place:1},
-   {n:'Story sums',         addMax:90, subMax:90, bonds:50, count:[2,5,10],  story:2, shapes:2, place:1, bondsForm:1, bondsReps:8},
-   {n:'Regrouping',         addMax:99, subMax:99, bonds:100, count:[10],      story:2, shapes:2, place:1, regroup:1, bondsForm:2, bondsReps:6},
-   {n:'Groups of 2·5·10',   addMax:99, subMax:99, bonds:100, count:[2,5,10],  story:2, shapes:0, mul:1, mulMax:40, regroup:1, bondsForm:2, bondsReps:7},
-   {n:'Two-step (little)',  addMax:99, subMax:99, bonds:100, count:[2,5,10],  story:2, shapes:0, mul:1, mulMax:60, twostep:1, regroup:2, bondsForm:2, bondsReps:8},
-   {n:'Bridge to big-girl', addMax:900, subMax:900, bonds:100, count:[3,4,6],   story:2, shapes:0, mul:1, mulMax:90, twostep:2, regroup:3, bondsForm:2, bondsReps:9}
+   {n:'Within 100',         addMax:80, subMax:80, bonds:50, count:[5,10],    story:1, shapes:2, place:1, clock:1},
+   {n:'Story sums',         addMax:90, subMax:90, bonds:50, count:[2,5,10],  story:2, shapes:2, place:1, bondsForm:1, bondsReps:8, clock:1, sym:1},
+   {n:'Regrouping',         addMax:99, subMax:99, bonds:100, count:[10],      story:2, shapes:2, place:1, regroup:1, bondsForm:2, bondsReps:6, clock:1, sym:1, data:1},
+   {n:'Groups of 2·5·10',   addMax:99, subMax:99, bonds:100, count:[2,5,10],  story:2, shapes:0, mul:1, mulMax:40, regroup:1, bondsForm:2, bondsReps:7, clock:2, sym:1, data:1, hundreds:1},
+   {n:'Two-step (little)',  addMax:99, subMax:99, bonds:100, count:[2,5,10],  story:2, shapes:0, mul:1, mulMax:60, twostep:1, regroup:2, bondsForm:2, bondsReps:8, clock:2, sym:2, data:2, hundreds:1},
+   {n:'Bridge to big-girl', addMax:900, subMax:900, bonds:100, count:[3,4,6],   story:2, shapes:0, mul:1, mulMax:90, twostep:2, regroup:3, bondsForm:2, bondsReps:9, clock:2, sym:2, data:2, hundreds:2}
   ],
   english:[
    {n:'Sight words',      wtier:'b', mini:0, write:'word'},
@@ -917,6 +917,16 @@ function ws_maths_sarah(li){const L=LEVELS.sarah.maths[li];let blocks=[],ans=[];
  return{title:'Maths Worksheet — Sarah (8)',sub:'Level '+(li+1)+'/'+LEVELS.sarah.maths.length+' · '+L.n,level:mLevelTag(li),blocks,ans};}
 function mLevelTag(li){const map=['Singapore P3 · fluency + 2-step','Singapore P3+ · larger numbers','Singapore P3–P4 · 3-step','P4 · fractions of a quantity','P4 · decimals & money','P4–P5 · long multiplication','P5 · ratio','P5 · percentages','P5–P6 · pre-algebra (bridge)','Lower-secondary · algebra & geometry (Math Kangaroo Benjamin)','Competition heuristics (Benjamin upper / SASMO upper)','The quantitative spike — algebra · geometry · logic · proof (AMC 8 entry)'];return map[li]||'Sarah maths';}
 
+/* Small inline-SVG clock face, shared by Block L's "read the clock" (hands drawn) and
+   "draw the time" (blank face, numbers only — child draws the hands by hand on the print-out) items. */
+function clockFaceSVG(h,m){const cx=60,cy=60;let ticks='';
+ for(let i=1;i<=12;i++){const ang=i*30*Math.PI/180,tx=cx+42*Math.sin(ang),ty=cy-42*Math.cos(ang);ticks+='<text x="'+tx+'" y="'+(ty+4)+'" font-size="10" text-anchor="middle">'+i+'</text>';}
+ let hands='';
+ if(h!=null){const hourAng=((h%12)+m/60)*30,minAng=m*6;
+  const hx=cx+34*Math.sin(hourAng*Math.PI/180),hy=cy-34*Math.cos(hourAng*Math.PI/180),mx=cx+46*Math.sin(minAng*Math.PI/180),my=cy-46*Math.cos(minAng*Math.PI/180);
+  hands='<line x1="'+cx+'" y1="'+cy+'" x2="'+hx+'" y2="'+hy+'" stroke="#333" stroke-width="3"/><line x1="'+cx+'" y1="'+cy+'" x2="'+mx+'" y2="'+my+'" stroke="#333" stroke-width="2"/>';}
+ return '<svg width="120" height="120" style="vertical-align:middle"><circle cx="'+cx+'" cy="'+cy+'" r="54" fill="none" stroke="#333" stroke-width="2"/>'+ticks+hands+'<circle cx="'+cx+'" cy="'+cy+'" r="3" fill="#333"/></svg>';}
+
 /* ---------- MATHS · MIRAYAH ---------- */
 function ws_maths_mirayah(li){const L=LEVELS.mirayah.maths[li];let blocks=[],ans=[];
  // A number bonds — bondsReps (default 6) lets a later rung ask for more repetition/fluency at the
@@ -1116,7 +1126,17 @@ function ws_maths_mirayah(li){const L=LEVELS.mirayah.maths[li];let blocks=[],ans
  // I tens & ones (place value) — was a dead flag (L.place set on rungs 4-7 but never read); NCERT Cl.2
  // ch.1 "A Day at the Beach" (block-sticks/ten-strips) + ch.6 "Decoration for Festival" (T/O columns)
  // and MOE P1 syllabus 1.2 ("make a group of ten and count on ... to tell the number") are the model.
- if(L.place){const cap=Math.max(19,Math.min(99,L.addMax||19)),n=R(11,cap),t=Math.floor(n/10),o=n%10;
+ // hundreds:1 (rungs 8-9, "Groups of 2·5·10" onward) replaces Block I's tens/ones-only reading
+ // (which stalls at 2-digit numbers, ≤99) with hundreds+tens+ones on numbers to 999 — school (PYP2)
+ // already reads/writes place value to 999, so this closes a real breadth gap rather than adding a
+ // bigger version of the same skill. hundreds:2 (rung 10 "Bridge to big-girl" only) adds rounding to
+ // the nearest 10 alongside it — school does this too, paired with 3-digit ± (see Blocks B/C's
+ // regroup:3 fix above, which now genuinely reaches 3-digit numbers on this same rung).
+ if(L.hundreds){const tier=L.hundreds,n=R(100,999),h=Math.floor(n/100),t=Math.floor((n%100)/10),o=n%10;
+  const it=[n+' = ____ hundreds, ____ tens and ____ ones'],a=[h+' hundreds, '+t+' tens and '+o+' ones'];
+  if(tier>=2){const n2=R(11,994),rounded=Math.round(n2/10)*10;it.push('Round '+n2+' to the nearest 10.');a.push(String(rounded));}
+  blocks.push({h:'I. Hundreds, tens & ones'+(tier>=2?' + rounding':''),items:it,write:2});ans.push('I: '+a.join('; '));}
+ else if(L.place){const cap=Math.max(19,Math.min(99,L.addMax||19)),n=R(11,cap),t=Math.floor(n/10),o=n%10;
   blocks.push({h:'I. Tens & ones',items:[n+' = ____ tens and ____ ones']});ans.push('I: '+t+' tens and '+o+' ones');}
  // J reasoning — Beast-Academy-Grade-2-style non-routine thinking, on EVERY rung (there was no
  // thinking block at all before this — every block above is routine compute-the-answer). Scales
@@ -1133,6 +1153,86 @@ function ws_maths_mirayah(li){const L=LEVELS.mirayah.maths[li];let blocks=[],ans
    ans.push('J: '+(a+b)+' (accept any picture/explanation that correctly shows this)');
   }
  }
+ // K data handling — pictograph (read) + bar graph (make: blank grid to shade) + Venn sort + one
+ // "what does the data tell you" inference question, all built off ONE shared random 3-fruit
+ // dataset so the inference question can genuinely draw on both chart readings. School (PYP2)
+ // covers pictographs/bar graphs/Venn diagrams; the inference question (K4) goes beyond simple
+ // reading into interpretation, which school's data-handling unit doesn't ask for.
+ // data:2 (rungs 9-10, "Two-step (little)"/"Bridge to big-girl") fixed a flat-block bug: data:1 was
+ // set identically on all four of rungs 7-10 with zero tier/knob inside the block (fixed 3-fruit pool,
+ // fixed R(2,9) values), so Block K was byte-identical in difficulty whether Mirayah was one rung past
+ // "Regrouping" or three rungs later at "Bridge to big-girl" (same bug class as blocks A/B/C/G/H/I
+ // already fixed elsewhere in this ladder). Fixed using only material already in this block's own
+ // CATS bank (5 fruits, only 3 were ever drawn) plus the existing poolNums 1-10 range: tier 2 draws
+ // 4 fruits instead of 3 (uses more of the same pool, genuinely more data to read across K1/K2) and
+ // K3's Venn sort gains a third circle (multiples of 3, same "sort these numbers" skill, one more
+ // category to track at once) — no new curriculum claims, just fuller use of content already present.
+ if(L.data){const tier=L.data,CATS=[['🍎','apples'],['🍌','bananas'],['🍇','grapes'],['🍊','oranges'],['🍓','strawberries']];
+  const chosen=shuf(CATS).slice(0,tier>=2?4:3),vals=chosen.map(()=>R(2,9)),maxV=Math.max(...vals),iMax=vals.indexOf(maxV),iMin=vals.indexOf(Math.min(...vals));
+  const it=[],a=[];
+  const pic=chosen.map((c,i)=>c[0].repeat(vals[i])+'  ('+c[1]+')').join('<br>');
+  it.push('K1)  Pictograph — each picture = 1 fruit:<br>'+pic+'<br>How many '+chosen[iMax][1]+' were counted, and how many more '+chosen[iMax][1]+' are there than '+chosen[iMin][1]+'?');
+  a.push(vals[iMax]+' '+chosen[iMax][1]+'; '+(vals[iMax]-vals[iMin])+' more');
+  let gridRows='';for(let r=maxV+1;r>=1;r--)gridRows+='<tr>'+chosen.map(()=>'<td style="width:26px;height:20px;border:1px solid #999"></td>').join('')+'</tr>';
+  const axisRow='<tr>'+chosen.map(c=>'<td style="text-align:center;font-size:15px;border-top:2px solid #333">'+c[0]+'</td>').join('')+'</tr>';
+  it.push('K2)  Bar graph — shade one square per fruit ('+chosen.map((c,i)=>c[1]+': '+vals[i]).join(', ')+'):<br><table style="border-collapse:collapse;margin:4px 0">'+gridRows+axisRow+'</table>Which fruit has the tallest bar?');
+  a.push(chosen[iMax][1]);
+  if(tier>=2){
+   const poolNums=shuf([1,2,3,4,5,6,7,8,9,10,11,12]).slice(0,8),inA=n=>n%2===0,inB=n=>n%5===0,inC=n=>n%3===0;
+   const abc=poolNums.filter(n=>inA(n)&&inB(n)&&inC(n)),ab=poolNums.filter(n=>inA(n)&&inB(n)&&!inC(n)),ac=poolNums.filter(n=>inA(n)&&inC(n)&&!inB(n)),bc=poolNums.filter(n=>inB(n)&&inC(n)&&!inA(n)),onlyA=poolNums.filter(n=>inA(n)&&!inB(n)&&!inC(n)),onlyB=poolNums.filter(n=>inB(n)&&!inA(n)&&!inC(n)),onlyC=poolNums.filter(n=>inC(n)&&!inA(n)&&!inB(n)),none=poolNums.filter(n=>!inA(n)&&!inB(n)&&!inC(n));
+   it.push('K3)  Venn diagram — sort these numbers: '+poolNums.join(', ')+'. Circle A = even numbers. Circle B = multiples of 5. Circle C = multiples of 3. Which numbers go in each circle, in more than one circle, or in none?');
+   a.push('only A: '+(onlyA.join(', ')||'none')+' · only B: '+(onlyB.join(', ')||'none')+' · only C: '+(onlyC.join(', ')||'none')+' · A&B: '+(ab.join(', ')||'none')+' · A&C: '+(ac.join(', ')||'none')+' · B&C: '+(bc.join(', ')||'none')+' · A&B&C: '+(abc.join(', ')||'none')+' · none: '+(none.join(', ')||'none'));
+  }else{
+   const poolNums=shuf([1,2,3,4,5,6,7,8,9,10]).slice(0,6),inA=n=>n%2===0,inB=n=>n%5===0;
+   const both=poolNums.filter(n=>inA(n)&&inB(n)),onlyA=poolNums.filter(n=>inA(n)&&!inB(n)),onlyB=poolNums.filter(n=>!inA(n)&&inB(n)),neither=poolNums.filter(n=>!inA(n)&&!inB(n));
+   it.push('K3)  Venn diagram — sort these numbers: '+poolNums.join(', ')+'. Circle A = even numbers. Circle B = multiples of 5. Which numbers go only in A, only in B, in BOTH circles, or in neither?');
+   a.push('only A: '+(onlyA.join(', ')||'none')+' · only B: '+(onlyB.join(', ')||'none')+' · both: '+(both.join(', ')||'none')+' · neither: '+(neither.join(', ')||'none'));
+  }
+  it.push('K4)  What does the fruit data tell you? If the shop can only restock ONE fruit this week, which should it be, and why?');
+  a.push(chosen[iMax][1]+' — accept any reasoning that references it being counted the most');
+  blocks.push({h:'K. Data handling — pictograph, bar graph & Venn',items:it,write:2});ans.push('K: '+a.join(' | '));}
+ // L telling the time — hour & half-hour (clock:1), pushing to 5-minute intervals (clock:2), both
+ // analogue (an inline-SVG clock face) and digital. School (PYP2) covers hour/half-hour reading;
+ // the 5-minute tier and the "draw the hands" (reverse) direction go a step beyond that.
+ if(L.clock){const tier=L.clock,mins=tier>=2?[0,5,10,15,20,25,30,35,40,45,50,55]:[0,30];
+  const digital=(h,m)=>h+':'+String(m).padStart(2,'0');
+  const h1=R(1,12),m1=P(mins),h2=R(1,12),m2=P(mins);
+  const it=['L1)  What time does this clock show? Write it in digital time.<br>'+clockFaceSVG(h1,m1)];
+  const a=[digital(h1,m1)];
+  it.push('L2)  Draw the hour hand and minute hand to show '+digital(h2,m2)+' on this clock:<br>'+clockFaceSVG(null,0));
+  const hourWord=m2===0?('exactly at '+h2):('between '+h2+' and '+(h2%12+1));
+  a.push('hour hand '+hourWord+'; minute hand pointing at the '+(m2===0?12:m2/5)+' (= '+m2+' minutes)');
+  blocks.push({h:'L. Telling the time'+(tier>=2?' (to 5 minutes)':' (hour & half-hour)'),items:it,write:2});ans.push('L: '+a.join(' | '));}
+ // M symmetry — complete a line of symmetry (school/PYP2 parity: mirror a shaded-grid picture
+ // across a dashed axis) plus one flip/turn (rigid transformation) question, which goes one step
+ // beyond school's mirror-only symmetry work.
+ // sym:2 (rungs 9-10, "Two-step (little)"/"Bridge to big-girl") fixed a flat-block bug: sym:1 was
+ // set identically on all five of rungs 6-10 with no tier/knob read inside the block (fixed 4x3 grid,
+ // fixed R(4,6) shaded count on every rung), so Block M's difficulty never grew across the ladder's
+ // last five rungs (same bug class as Block K above). Fixed with the same kind of escalation already
+ // used elsewhere on this ladder (Block L's clock grid difficulty, Block I's hundreds place value):
+ // tier 2 widens the same mirror-grid puzzle to a bigger 5x4 grid with more shaded squares to mirror
+ // (harder tracking of more row/col positions), not new content — same mechanic, more of it.
+ if(L.sym){const tier=L.sym,ROWS=tier>=2?5:4,LCOLS=tier>=2?4:3,TCOLS=LCOLS*2,shadedLeft=[],want=tier>=2?R(7,10):R(4,6);
+  while(shadedLeft.length<want){const r=R(1,ROWS),c=R(1,LCOLS);if(!shadedLeft.some(p=>p[0]===r&&p[1]===c))shadedLeft.push([r,c]);}
+  let rowsHTML='';
+  for(let r=1;r<=ROWS;r++){rowsHTML+='<tr>';
+   for(let c=1;c<=TCOLS;c++){const isShaded=c<=LCOLS&&shadedLeft.some(p=>p[0]===r&&p[1]===c),borderR=(c===LCOLS)?'border-right:3px dashed #333;':'';
+    rowsHTML+='<td style="width:22px;height:22px;border:1px solid #999;'+borderR+(isShaded?'background:#7c9cff;':'')+'"></td>';}
+   rowsHTML+='</tr>';}
+  const gridHTML='<table style="border-collapse:collapse;margin:6px 0">'+rowsHTML+'</table>';
+  const mirrorAns=shadedLeft.map(p=>'(row '+p[0]+', col '+(TCOLS+1-p[1])+')').join(', ');
+  const it=['M1)  This picture will be symmetric across the dashed line once it is finished. Shade the missing squares on the right so both sides match:<br>'+gridHTML];
+  const a=['shade '+mirrorAns];
+  const dirs=['up','right','down','left'],startIdx=R(0,3),start=dirs[startIdx],op=P(['flip','flipV','turn']);
+  const angleMap={up:-90,right:0,down:90,left:180},arrow=d=>'<span style="display:inline-block;font-size:30px;transform:rotate('+angleMap[d]+'deg)">➤</span>';
+  let resultIdx,opWord;
+  if(op==='flip'){resultIdx=(start==='left')?dirs.indexOf('right'):(start==='right')?dirs.indexOf('left'):startIdx;opWord='flip it left-right (a mirror flip across a vertical line)';}
+  else if(op==='flipV'){resultIdx=(start==='up')?dirs.indexOf('down'):(start==='down')?dirs.indexOf('up'):startIdx;opWord='flip it up-down (a mirror flip across a horizontal line)';}
+  else{resultIdx=(startIdx+1)%4;opWord='turn it a quarter turn clockwise (90°)';}
+  it.push('M2)  This arrow points '+start+':  '+arrow(start)+'<br>If you '+opWord+', which way will it point now?');
+  a.push(dirs[resultIdx]);
+  blocks.push({h:'M. Symmetry & transformations',items:it,write:2});ans.push('M: '+a.join(' | '));}
  return{title:'Maths Worksheet — Mirayah (6)',sub:'Level '+(li+1)+'/'+LEVELS.mirayah.maths.length+' · '+L.n,level:'Age 6 · number sense — concrete & playful (joy first)',blocks,ans};}
 
 /* ---------- ENGLISH · content banks ---------- */
