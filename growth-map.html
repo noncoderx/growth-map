@@ -204,17 +204,17 @@ const LEVELS={
  sarah:{
   maths:[
    {n:'Tables & 2-step',        wm:12,             s:2, bar:'cmp',  patt:'arith', chal:1},
-   {n:'Bigger numbers',         wm:12, mul2:1,      s:2, bar:'cmp',  patt:'arith', chal:1, coord:1},
-   {n:'Three-step problems',    wm:12, mul2:1,      s:3, bar:'cmp',  patt:'geo',   chal:2, coord:1},
-   {n:'Fractions begin',        wm:12, mul2:1, frac:1, s:3, bar:'frac', patt:'geo', chal:2, coord:2},
-   {n:'Decimals & money',       wm:12, mul2:1, dec:1,  s:3, bar:'dec',  patt:'geo', chal:3, coord:2},
-   {n:'Multiplication mastery', wm:12, longmul:1, frac:1,   s:3, bar:'frac', patt:'tri',  chal:3, coord:3},
-   {n:'Ratio & proportion',     wm:12, longmul:1, ratio:1,  s:3, bar:'ratio',patt:'seq',  chal:3, coord:3},
-   {n:'Percentages',            wm:12, longmul:1, pct:1,    s:3, bar:'pct',  patt:'seq',  chal:4, barChal:5, coord:4},
-   {n:'Pre-algebra',            wm:12, longmul:1, algebra:1,s:3, bar:'ratio',patt:'seq',  chal:4, coord:4},
-   {n:'Algebra & geometry',     wm:12, longmul:1, algebra:2, geom:1,   s:3, bar:'pct',  patt:'quad', chal:5, coord:4},
-   {n:'Competition heuristics', wm:12, longmul:1, algebra:3, geom:1, comp:1, s:3, bar:'ratio3', patt:'quad', chal:5, coord:4},
-   {n:'The quantitative spike', wm:12, longmul:1, algebra:3, geom:1, comp:1, proof:1, logic:1, s:3, bar:'pct', patt:'quad', chal:6, coord:4}
+   {n:'Bigger numbers',         wm:12, mul2:1,      s:2, bar:'cmp',  patt:'arith', chal:1, bignum:1, coord:1},
+   {n:'Three-step problems',    wm:12, mul2:1,      s:3, bar:'cmp',  patt:'geo',   chal:2, bignum:1, coord:1},
+   {n:'Fractions begin',        wm:12, mul2:1, frac:1, s:3, bar:'frac', patt:'geo', chal:2, bignum:2, coord:2},
+   {n:'Decimals & money',       wm:12, mul2:1, dec:1,  s:3, bar:'dec',  patt:'geo', chal:3, bignum:2, coord:2},
+   {n:'Multiplication mastery', wm:12, longmul:1, frac:1,   s:3, bar:'frac', patt:'tri',  chal:3, bignum:3, coord:3, bigmul:1},
+   {n:'Ratio & proportion',     wm:12, longmul:1, ratio:1,  s:3, bar:'ratio',patt:'seq',  chal:3, bignum:3, coord:3, bigmul:1, bnChal:4, bmChal:4},
+   {n:'Percentages',            wm:12, longmul:1, pct:1,    s:3, bar:'pct',  patt:'seq',  chal:4, barChal:5, bignum:4, coord:4, bigmul:2},
+   {n:'Pre-algebra',            wm:12, longmul:1, algebra:1,s:3, bar:'ratio',patt:'seq',  chal:4, bignum:4, coord:4, bigmul:2, bnChal:5, bmChal:5},
+   {n:'Algebra & geometry',     wm:12, longmul:1, algebra:2, geom:1,   s:3, bar:'pct',  patt:'quad', chal:5, bignum:5, coord:4, bigmul:3},
+   {n:'Competition heuristics', wm:12, longmul:1, algebra:3, geom:1, comp:1, s:3, bar:'ratio3', patt:'quad', chal:5, bignum:5, coord:4, bigmul:3, bnChal:6, bmChal:6},
+   {n:'The quantitative spike', wm:12, longmul:1, algebra:3, geom:1, comp:1, proof:1, logic:1, s:3, bar:'pct', patt:'quad', chal:6, bignum:6, coord:4, bigmul:4}
   ],
   english:[
    {n:'Comprehension',        vt:'easy',  pt:1, gt:'easy', gc:4, write:'para'},
@@ -775,6 +775,54 @@ function m_logic(L){const nm=[...NAMES].sort(()=>Math.random()-0.5);
   write:4,
   a:'H: '+M+' has the least. '+F+' > '+B+' > '+J+' > '+M+', and '+C+' > '+M+' too — so every other person has more '+item+' than '+M+'; '+M+' must be last even though '+C+'’s exact rank stays unknown.'};}
 
+/* Place value & big numbers — school ceiling is millions/lakhs; bignum tiers 1-6 push one notch
+   past that (up to billions/arab) while also covering Indian lakh/crore comma grouping, which
+   school's international-only place-value work doesn't touch.
+   bnChal — like m_bar's barChal, an escape hatch for rungs where L.bignum advances only every
+   OTHER rung (1,1,2,2,3,3,4,4,5,5,6 across rungs 1-12) so two adjacent rungs land in the exact
+   same RNG tier bucket and draw statistically identical numbers. bignum's tier baseline lines up
+   with L.chal at the rung that FIRST introduces each tier (tier N first appears at chal N), so
+   bo=max(0,ch-tier) is 0 on the introducing rung and >0 once bnChal (or a naturally-higher chal)
+   pushes past it — widening the range instead of repeating it. */
+function m_placevalue(L){const tier=Math.min(L.bignum||1,6);
+ const ch=L.bnChal||L.chal||1,bo=Math.max(0,ch-tier);
+ const RNGbase=[[1000,999999],[10000,9999999],[1000000,19999999],[10000000,99999999],[100000000,999999999],[1000000000,9999999999]][tier-1];
+ const RNG=bo?[RNGbase[0],Math.round(RNGbase[1]*(1+0.5*bo))]:RNGbase;
+ const fmtIndian=n=>{let s=String(Math.trunc(n));if(s.length<=3)return s;let last3=s.slice(-3),rest=s.slice(0,-3);rest=rest.replace(/\B(?=(\d{2})+(?!\d))/g,',');return rest+','+last3;};
+ const fmtIntl=n=>n.toLocaleString('en-US');
+ const B=[],a=[];let idx=0;
+ const placeNames=['ones','tens','hundreds','thousands','ten thousands','hundred thousands','millions','ten millions','hundred millions','billions'];
+ const n1=R(RNG[0],RNG[1]),s1=String(n1),pos=R(0,s1.length-1),pname=placeNames[s1.length-1-pos]||'?',digit=s1[pos],placeVal=Number(digit)*Math.pow(10,s1.length-1-pos);
+ B.push((++idx)+')  In the number '+fmtIntl(n1)+', what is the value of the digit '+digit+' (the '+pname+' place)?');a.push(fmtIntl(placeVal));
+ const n2a=R(RNG[0],RNG[1]),n2b=R(RNG[0],RNG[1]);
+ B.push((++idx)+')  Compare: '+fmtIntl(n2a)+'   ____   '+fmtIntl(n2b)+'   (write <, > or =)');a.push(n2a<n2b?'<':(n2a>n2b?'>':'='));
+ const roundTo=tier<=2?P(bo?[1000,10000]:[100,1000,10000]):(tier<=4?P(bo?[100000,1000000]:[10000,100000,1000000]):P(bo?[10000000,100000000]:[1000000,10000000,100000000]));
+ const n3=R(RNG[0],RNG[1]),rounded=Math.round(n3/roundTo)*roundTo;
+ B.push((++idx)+')  Round '+fmtIntl(n3)+' to the nearest '+fmtIntl(roundTo)+'.');a.push(fmtIntl(rounded));
+ const n4=R(RNG[0],RNG[1]);
+ if(R(0,1)===0){B.push((++idx)+')  Write '+fmtIntl(n4)+' using the Indian number system (lakh/crore comma grouping).');a.push(fmtIndian(n4));}
+ else{B.push((++idx)+')  Write '+fmtIndian(n4)+' using the international number system (comma every 3 digits).');a.push(fmtIntl(n4));}
+ if(tier>=3){const n5=R(RNG[0],RNG[1]);B.push((++idx)+')  About how many lakh is '+fmtIntl(n5)+'? (round to the nearest lakh)');a.push(fmtIntl(Math.round(n5/100000))+' lakh');}
+ const roundToEst=tier<=2?1000:(tier<=4?100000:1000000),e1=R(RNG[0],RNG[1]),e2=R(RNG[0],RNG[1]),est1=Math.round(e1/roundToEst)*roundToEst,est2=Math.round(e2/roundToEst)*roundToEst;
+ B.push((++idx)+')  A stadium sold '+fmtIntl(e1)+' tickets on day 1 and '+fmtIntl(e2)+' on day 2. Estimate the total by rounding each to the nearest '+fmtIntl(roundToEst)+', then adding.');a.push('≈ '+fmtIntl(est1+est2)+' (estimate)');
+ return{h:'I. Big numbers & place value'+(tier>=3?' (lakhs & crores)':''),items:B,write:3,a:'I: '+a.join('; ')};}
+
+/* Long multiplication — school already reaches 4-digit × 3-digit; bigmul tiers push past that
+   (5-digit × 3-digit, then 4-digit × 4-digit, then embedded in a multi-step word problem).
+   bmChal — same fix as m_placevalue's bnChal: L.bigmul only advances every OTHER rung (-,-,-,-,-,
+   1,1,2,2,3,3,4 across rungs 1-12), so the R() bounds below (already widened per L.boost for the
+   separate Independent-Study path) were flat within each same-tier pair. bigmul's tier baseline
+   lines up with L.chal at tier+2 (tier1 first appears chal3, tier2 at chal4, tier3 at chal5), so
+   chBo=max(0,ch-(tier+2)) is 0 on the introducing rung and >0 on its paired follow-up rung. */
+function m_bigmul(L){const tier=Math.min(L.bigmul||1,4);
+ const ch=L.bmChal||L.chal||1,chBo=Math.max(0,ch-(tier+2));
+ const bo=(L.boost||0)+chBo*6;const B=[],a=[];let idx=0;
+ if(tier===1){const x=R(1000,9899+50*bo),y=R(100,899+20*bo);B.push((++idx)+')  '+x+' × '+y+' = ____   (show your long multiplication)');a.push(String(x*y));}
+ else if(tier===2){const x=R(10000,98999+500*bo),y=R(100,899+20*bo);B.push((++idx)+')  '+x+' × '+y+' = ____   (show your long multiplication)');a.push(String(x*y));}
+ else if(tier===3){const x=R(1000,9899+50*bo),y=R(1000,9899+50*bo);B.push((++idx)+')  '+x+' × '+y+' = ____   (show your long multiplication)');a.push(String(x*y));}
+ else{const x=R(1000,9899+50*bo),y=R(100,899+20*bo),extra=R(100,999+10*bo);B.push((++idx)+')  A warehouse packs '+x+' crates, each holding '+y+' items. '+extra+' loose items are added on top. How many items in total?');a.push(String(x*y+extra));}
+ return{h:'J. Long multiplication — 4-digit × 3-digit'+(tier>=2?' and beyond':''),items:B,write:3,a:'J: '+a.join('; ')};}
+
 /* Coordinate geometry — school already covers plotting in all four quadrants; coord tiers add
    reflections (tier 2), axis-aligned distance (tier 3), then general-point distance via a
    Pythagorean-triple grid count (tier 4, kept to exact triples so no square roots are needed). */
@@ -813,6 +861,8 @@ function ws_maths_sarah(li){const L=LEVELS.sarah.maths[li];let blocks=[],ans=[];
  if(L.algebra){const al=m_algebra(L);blocks.push({h:al.h,items:al.items,write:al.write});ans.push(al.a);}
  if(L.geom){const ge=m_geometry(L);blocks.push({h:ge.h,items:ge.items,write:ge.write});ans.push(ge.a);}
  if(L.logic){const lg=m_logic(L);blocks.push({h:lg.h,items:lg.items,write:lg.write});ans.push(lg.a);}
+ if(L.bignum){const pv=m_placevalue(L);blocks.push({h:pv.h,items:pv.items,write:pv.write});ans.push(pv.a);}
+ if(L.bigmul){const bm=m_bigmul(L);blocks.push({h:bm.h,items:bm.items,write:bm.write});ans.push(bm.a);}
  if(L.coord){const co=m_coords(L);blocks.push({h:co.h,items:co.items,write:co.write});ans.push(co.a);}
  let chalPool=CHAL[L.chal]||CHAL[3];
  // Several same-chal adjacent-rung pairs share the identical 3-item base pool with nothing to
