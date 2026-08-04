@@ -226,7 +226,19 @@ const LEVELS={
    // prompt. (see growth-map-exhaustive-audit finding, english/sarah rung1 'Comprehension' -> rung2
    // 'Inference', Blocks D and G.)
    {n:'Inference',            vt:'easy',  pt:2, gt:'easy', gc:5, write:'predict'},
-   {n:'Vocab in context',     vt:'mid',   pt:2, gt:'easy', gc:5, write:'describe'},
+   // gc:6 (was 5) — this rung previously matched rung2 ('Inference') identically on Block D
+   // (gc:5/gt:'easy') AND Block C (pt:2, same tier-2 5-entry PASSAGES pool), so the mastery-gated
+   // MTOTAL was byte-identical (15==15) between the two rungs and only Block A's vocab tier
+   // (vt:'easy'->'mid') carried the whole escalation. gt can't be promoted to 'hard' here — GRAMMAR.hard
+   // is documented/reserved for "rung4 'Opinion & why' onward" (see GRAMMAR.hard's own comment), and pt
+   // can't move to 3 without breaking the ladder's non-decreasing pt sequence (rung4 right after this
+   // one is still pt:2). So this widens the gap the mechanical way instead, same pattern already used at
+   // the rung6->rung7 seam: gc bumps 5->6, pushing MTOTAL to 16 (5+5+6) vs rung2's 15. GRAMMAR.easy has
+   // 12 entries so gc:6 stays well within pool size. This ties rung4's gc (also 6), but that tie is
+   // already precedented on this ladder (see rung7's comment) and harmless here since rung3/rung4 draw
+   // from different grammar banks entirely (gt:'easy' vs gt:'hard') — no identical-rung pair results.
+   // (see growth-map-exhaustive-audit finding, english/sarah rung2 'Inference' -> rung3 'Vocab in context'.)
+   {n:'Vocab in context',     vt:'mid',   pt:2, gt:'easy', gc:6, write:'describe'},
    {n:'Opinion & why',        vt:'mid',   pt:2, gt:'hard', gc:6, write:'opinion'},
    {n:'Multi-paragraph',      vt:'mid',   pt:3, gt:'hard', gc:7, write:'multi'},
    {n:'Persuasive writing',   vt:'hard',  pt:3, gt:'hard', gc:8, write:'persuade'},
