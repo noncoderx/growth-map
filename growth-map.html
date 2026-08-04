@@ -1724,13 +1724,15 @@ function ws_english_mirayah(li,book){const L=LEVELS.mirayah.english[li];let bloc
  // Rungs 3-4 ('First sentences'/'Short comprehension') were ALSO both mini:1, wtier:'b', drawing
  // from the identical MINISTORY[0-5] pool with no qs on either — a confirmed mastery-gated level-up
  // from rung 3 to rung 4 produced statistically indistinguishable passages (live-generated samples
- // repeatedly drew the exact same story, e.g. "Sam and his red ball", for both rungs). Fixed by
- // narrowing rung 3 ('First sentences' — the more basic literal-recall level) to MINISTORY[0-1], the
- // two shortest, simplest, 2-question-only stories in the bank (Sam's ball, Pip the puppy), while
- // rung 4 keeps the full original MINISTORY[0-5] 6-story pool — a real, non-overlapping-majority step
- // up in both passage length and question count. Rung 4 and rung 5 continue to intentionally share
- // that same MINISTORY[0-5] pool, differentiated only by rung 5's qs:1 (see below) — that pairing was
- // already fixed and verified separately and is untouched here.
+ // repeatedly drew the exact same story, e.g. "Sam and his red ball", for both rungs). First fix
+ // narrowed rung 3 ('First sentences') to MINISTORY[0-1] (Sam's ball, Pip the puppy) and left rung 4
+ // on the full original MINISTORY[0-5] 6-story pool — but that pool still CONTAINED rung 3's two
+ // stories, so a level-up could still (and empirically did, ~16% of 3000 live-generated samples)
+ // draw the exact same story for both rungs' Block D. Follow-up fix: rung 4 now draws from
+ // MINISTORY.slice(2,6) — the remaining 4 stories, indices 2-5 — disjoint from rung 3's slice(0,2),
+ // so Block D can never be identical across this level-up. Rung 5 (li>=5 branch below) is untouched
+ // and still draws from the original MINISTORY[0-5] pool, differentiated from rung 4 by its own
+ // qs:1 — that overlap between rung 4 and rung 5 is intentional (already fixed/verified separately).
  // Rungs 4-6 ('Short comprehension'/'Retell it'/'Two details') were ALSO all mini:1 — identical
  // wtier:'b', identical MINISTORY[0-5] pool, one random story each — so the only thing that changed
  // rung to rung was the ungraded Block E writing prompt text. Fixed by giving the graded blocks a
@@ -1794,7 +1796,7 @@ function ws_english_mirayah(li,book){const L=LEVELS.mirayah.english[li];let bloc
   const boost=L.boost||0;
   const storyCount=boost?Math.min(MIRA_ALL_STORIES.length,1+boost):1;
   const qsCount=boost?Math.min(storyCount,1+Math.floor(boost/2)):(L.qs?1:0);
-  const pool=boost?MIRA_ALL_STORIES:(li>=9?MINISTORY_LONG:li>=5?(L.mini>=3?MINISTORY_MED.slice(3):(effWtier==='b'?MINISTORY_MED.slice(0,2):MINISTORY_MED.slice(2,3))):(li===2?MINISTORY.slice(0,2):MINISTORY.slice(0,6)));
+  const pool=boost?MIRA_ALL_STORIES:(li>=9?MINISTORY_LONG:li>=5?(L.mini>=3?MINISTORY_MED.slice(3):(effWtier==='b'?MINISTORY_MED.slice(0,2):MINISTORY_MED.slice(2,3))):(li===2?MINISTORY.slice(0,2):li===3?MINISTORY.slice(2,6):MINISTORY.slice(0,6)));
   const stories=boost?shuf(MIRA_ALL_STORIES).slice(0,storyCount):[P(pool)];
   let dq=[],da=[];
   stories.forEach((ms,i)=>{dq=dq.concat(ms.q);da=da.concat(ms.a);if(i<qsCount){dq.push(ms.x);da.push(ms.xa);}});
