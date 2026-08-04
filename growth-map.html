@@ -1610,11 +1610,16 @@ function ws_english_sarah(li,book){const L=LEVELS.sarah.english[li];let blocks=[
    ? shuf([RHETORIC.find(d=>d.name==='Rhetorical question'),RHETORIC.find(d=>d.name==='Rule of three')])
    : shuf(RHETORIC).slice(0,Math.min(RHETORIC.length,1+L.tech));
   blocks.push({h:'E. Learn the technique',items:td.map((d,i)=>(i+1)+')  '+d.name+' — '+d.explain+'.  Example: '+d.example),write:0,ungraded:true});
+  // F item count now scales with td.length (itself 1+L.tech, capped at RHETORIC.length) instead of being
+  // hardcoded to exactly 2 regardless of L.tech — one "write your own sentence" line per technique taught
+  // in Block E, on top of the fixed "spot it in the passage" line. Previously tech:1→2→3 across rungs
+  // 10-12 grew Block E's teaching content but contributed nothing to Block F/MTOTAL, so the only thing
+  // separating those mastery-gated rungs was gc's routine +1 (see growth-map-exhaustive-audit finding,
+  // english/sarah rung10→rung11 Block F).
   blocks.push({h:'F. Spot the technique',items:[
-    '1)  Look at the passage in Block C. Can you find any of these techniques used there? If yes, quote it and name it. If not, explain how the writer creates a similar effect in their own words.  ____',
-    '2)  Now write your own sentence using '+td[0].name+':  ____'
-   ],write:2});
-  ans.push('E/F techniques: '+td.map(d=>d.name+' = '+d.explain).join('; ')+' (F: Q1/Q2 open — accept any correctly identified device or grammatically sound original sentence using it)');
+    '1)  Look at the passage in Block C. Can you find any of these techniques used there? If yes, quote it and name it. If not, explain how the writer creates a similar effect in their own words.  ____'
+   ].concat(td.map((d,i)=>(i+2)+')  Now write your own sentence using '+d.name+':  ____')),write:2});
+  ans.push('E/F techniques: '+td.map(d=>d.name+' = '+d.explain).join('; ')+' (F: all questions open — accept any correctly identified device or grammatically sound original sentence using it)');
   wLetter='G';
  }
  // G/E writing — free-response task with no printed answer key; must not count toward MTOTAL/mastery.
