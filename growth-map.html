@@ -212,7 +212,7 @@ const LEVELS={
    {n:'Ratio & proportion',     wm:12, longmul:1, ratio:1,  s:3, bar:'ratio',patt:'seq',  chal:3, bignum:3, coord:3, coordChal:4, bigmul:1, bnChal:4, bmChal:4},
    {n:'Percentages',            wm:12, longmul:1, pct:1,    s:3, bar:'pct',  patt:'seq',  chal:4, barChal:5, bignum:4, coord:4, bigmul:2},
    {n:'Pre-algebra',            wm:12, longmul:1, algebra:1,s:3, bar:'ratio',patt:'seq',  chal:4, bignum:4, coord:4, coordChal:5, bigmul:2, bnChal:5, bmChal:5},
-   {n:'Algebra & geometry',     wm:12, longmul:1, algebra:2, geom:1,   s:3, bar:'pct',  patt:'quad', chal:5, bignum:5, coord:4, coordChal:6, bigmul:3},
+   {n:'Algebra & geometry',     wm:12, longmul:1, algebra:2, geom:1,   s:3, bar:'pct',  patt:'quad', chal:5, barChal:6, bignum:5, coord:4, coordChal:6, bigmul:3},
    {n:'Competition heuristics', wm:12, longmul:1, algebra:3, geom:1, comp:1, s:3, bar:'ratio3', patt:'quad', chal:5, bignum:5, coord:4, coordChal:7, bigmul:3, bnChal:6, bmChal:6},
    {n:'The quantitative spike', wm:12, longmul:1, algebra:3, geom:1, comp:1, proof:1, logic:1, s:3, bar:'pct', patt:'quad', chal:6, bignum:6, coord:4, coordChal:8, bigmul:4}
   ],
@@ -657,7 +657,9 @@ function m_bar(L){const t=L.bar||'cmp';const fmtB=p=>Math.floor(p/100)+'.'+Strin
  // drives the ★ Challenge pool, m_mistake's bank, m_geometry's bo offset, etc.). Without it, the
  // "Percentages" rung (chal:4) drew the EASIEST percent tier ([10,20,50]) since m_bar's pct branch
  // gates harder pools on ch>=5, while later rungs that merely reuse bar:'pct' incidentally (rung 10
- // chal:5, rung 12 chal:6) drew harder percentages than the rung actually teaching the topic.
+ // chal:5, rung 12 chal:6) drew harder percentages than the rung actually teaching the topic. Rung 10
+ // also needs its own override (barChal:6) — at its natural chal:5 it drew the identical ch>=5 percent
+ // band as rung 8's override, making Block C byte-for-byte identical two rungs apart on the ladder.
  const ch=L.barChal||L.chal||1;
  if(t==='dec'){const aP=R(3,18)*5,bP=R(3,18)*5,totP=aP+bP;return{h:'C. Bar-model challenge — draw the bars',items:[P(NAMES)+' spent ₹'+fmtB(totP)+' in total on a toy and a comic. The toy cost ₹'+fmtB(aP)+'. Draw a bar split into two parts to find how much the comic cost.'],write:3,a:'C: ₹'+fmtB(bP)};}
  if(t==='frac'){const dPool=ch>=3?[4,5,6,8,9]:[3,4,5],d=P(dPool),k=R(3,4+ch),whole=d*k,num=R(1,d-1),got=num*k;return{h:'C. Bar-model challenge — draw the bars',items:[num+'/'+d+' of a number is '+got+'. Draw a bar in '+d+' equal parts to find the whole number.'],write:3,a:'C: whole = '+whole};}
