@@ -2113,7 +2113,7 @@ function openMasteryCheck(gk,sk){
  document.getElementById('mTotal').textContent=MTOTAL;
  const need=Math.ceil(MTOTAL*MASTERY_PASS);
  document.getElementById('mNeed').textContent='Need '+need+'/'+MTOTAL+' ('+Math.round(MASTERY_PASS*100)+'%+) to level up. Below that → fresh practice sheet at the same level.';
- const input=document.getElementById('mCorrect');input.max=MTOTAL;input.value=MTOTAL;
+ const input=document.getElementById('mCorrect');input.max=MTOTAL;input.value=0;
  document.getElementById('masteryOverlay').style.display='flex';
 }
 function closeMasteryCheck(){document.getElementById('masteryOverlay').style.display='none';MGK=null;MSK=null;}
