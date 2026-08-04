@@ -301,7 +301,16 @@ const LEVELS={
    {n:'Counting play',      addMax:10, subMax:5, bonds:10, count:[2],        story:1, shapes:1},
    {n:'Bonds to 10',        addMax:16, subMax:15, bonds:10, count:[5],      story:0, shapes:1, bondsReps:9, bondsForm:1},
    {n:'Add & take to 20',   addMax:20, subMax:20, bonds:20, count:[2,5],     story:1, shapes:1},
-   {n:'Teen numbers',       addMax:20, subMax:20, bonds:20, count:[2,5,10],  story:1, shapes:2, place:1, bondsForm:1, bondsReps:8},
+   // addMax/subMax were pinned identically to rung 3 (20/20) — Blocks B (add), C (subtract) and G
+   // (story:1 branch) derive their numeric ranges purely from these two caps, so a mastery-gated
+   // level-up from rung 3 to rung 4 left the two 6-item compute blocks and the story sum statistically
+   // indistinguishable (see growth-map-exhaustive-audit finding: 250-sample check, rung3 B mean=14.5 vs
+   // rung4 B mean=14.5, same 4-20 envelope). Raised to 26/26 — same fix pattern as rung1->2 (addMax
+   // 10->16) — so B/C/G genuinely escalate on this level-up, while staying well under rung 5's jump to
+   // 80. Rung 4's "teen numbers" skill lives in the new Block I (place value, cap=max(19,min(99,
+   // addMax))) which already widens past strict 11-19 on rungs 5-7 as addMax grows there too, so this
+   // doesn't clash with that block's existing design.
+   {n:'Teen numbers',       addMax:26, subMax:26, bonds:20, count:[2,5,10],  story:1, shapes:2, place:1, bondsForm:1, bondsReps:8},
    {n:'Within 100',         addMax:80, subMax:80, bonds:50, count:[5,10],    story:1, shapes:2, place:1, clock:1},
    {n:'Story sums',         addMax:90, subMax:90, bonds:50, count:[2,5,10],  story:2, shapes:2, place:1, bondsForm:1, bondsReps:8, clock:1, sym:1},
    {n:'Regrouping',         addMax:99, subMax:99, bonds:100, count:[10],      story:2, shapes:2, place:1, regroup:1, bondsForm:2, bondsReps:6, clock:2, sym:1, data:1},
