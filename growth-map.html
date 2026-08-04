@@ -218,7 +218,14 @@ const LEVELS={
   ],
   english:[
    {n:'Comprehension',        vt:'easy',  pt:1, gt:'easy', gc:4, write:'para'},
-   {n:'Inference',            vt:'easy',  pt:2, gt:'easy', gc:4, write:'para'},
+   // gc:5 (was 4) + write:'predict' (was 'para') — this rung previously matched rung1 ('Comprehension')
+   // identically on both Block D (gc:4/gt:'easy') and Block G (write:'para'), the only rung pair in the
+   // ladder reusing an identical write-task template; the rung1->rung2 escalation was carried by Block C
+   // alone. GRAMMAR.easy has 12 entries so gc:5 stays well within pool size. 'predict' is an on-theme
+   // task for the 'Inference' rung name (see WRITE_TASKS.predict comment) instead of the generic 'para'
+   // prompt. (see growth-map-exhaustive-audit finding, english/sarah rung1 'Comprehension' -> rung2
+   // 'Inference', Blocks D and G.)
+   {n:'Inference',            vt:'easy',  pt:2, gt:'easy', gc:5, write:'predict'},
    {n:'Vocab in context',     vt:'mid',   pt:2, gt:'easy', gc:5, write:'describe'},
    {n:'Opinion & why',        vt:'mid',   pt:2, gt:'hard', gc:6, write:'opinion'},
    {n:'Multi-paragraph',      vt:'mid',   pt:3, gt:'hard', gc:7, write:'multi'},
@@ -1455,6 +1462,11 @@ function pickPassage(pt){const pool=PASSAGES.filter(p=>p.tier===pt);if(pool.leng
 
 const WRITE_TASKS={
  para:b=>'Write a short paragraph about “'+b+'”: start with a topic sentence, then give two details.',
+ // predict — rung2 'Inference' only (see growth-map-exhaustive-audit finding, english/sarah rung1->rung2
+ // Block D+G). Previously rung2 reused write:'para' verbatim from rung1, so the mastery-gated level-up
+ // repeated the identical writing prompt; this key gives 'Inference' its own on-theme task (predicting
+ // from clues is the core inference skill) instead of the generic topic-sentence paragraph.
+ predict:b=>'Using clues from “'+b+'”, predict what you think will happen next in the story. Write your prediction, then give ONE clue from the book that made you think so.',
  describe:b=>'Describe your favourite character in “'+b+'” so well that a reader who has never met them can picture them. Use two of this week’s vocab words.',
  opinion:b=>'Pick one choice a character made in “'+b+'”. Was it right or wrong? State your opinion and give TWO reasons.',
  multi:b=>'Write TWO linked paragraphs about “'+b+'”: paragraph 1 — what happens; paragraph 2 — what you think about it and why.',
