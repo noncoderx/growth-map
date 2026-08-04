@@ -1446,11 +1446,12 @@ const WRITE_TASKS={
  interview:b=>'You have 5 minutes with an admissions tutor. In writing, answer: “Tell me about a book that changed how you think, and why.” Make a real point and defend it.'
 };
 // RHETORIC — rhetorical-technique bank, gated on LEVELS.sarah.english[li].tech (rungs 9-12: "Rhetoric &
-// technique", "Debate — both sides", "Personal voice", "Interview reasoning" — all four carry tech:1,
-// verified by re-reading LEVELS.sarah.english[8..11] directly; a prior finding said "rungs 9-11" but that
-// undercounted rung 12, which also sets tech:1). L.tech was set on these rungs from the start but
-// ws_english_sarah never read it — a dead flag (see content/english-sarah-rung1.md's dead-flag audit,
-// re-confirmed in rungs 5-8's audits). Fixed by wiring a real "Spot the technique" block off it.
+// technique", "Debate — both sides", "Personal voice", "Interview reasoning" — rungs 9-10 carry tech:1,
+// then rungs 11-12 climb to tech:2/tech:3, verified by re-reading LEVELS.sarah.english[8..11] directly;
+// see the rungs 10-12 staggering fix above for why the climb starts at rung 11, not rung 9). L.tech was
+// set on these rungs from the start but ws_english_sarah never read it — a dead flag (see
+// content/english-sarah-rung1.md's dead-flag audit, re-confirmed in rungs 5-8's audits). Fixed by wiring
+// a real "Spot the technique" block off it.
 // On rung 9 specifically (L.write==='rhetoric') the two devices drawn are FORCED to be "Rhetorical
 // question" + "Rule of three" (not a random shuf().slice(0,2)) because WRITE_TASKS.rhetoric hardcodes
 // those exact two names in its instruction — a prior version drew uniformly at random from all 5
@@ -1458,9 +1459,11 @@ const WRITE_TASKS={
 // writing challenge then demanded (verified live: 5/30 draws contained both by chance, matching the
 // 1/C(5,2)=10% baseline). Rungs 10-12 (debate/personal/interview) still draw randomly from RHETORIC —
 // their WRITE_TASKS entries don't name specific devices, so there is nothing for Block E to be forced to.
-// NOTE: tech:1 being identical on all of rungs 9-12 only differentiates rung 8 (no Block E) from rung 9+
-// (has Block E) — it does NOT differentiate rungs 9/10/11/12 from each other, since Block E always draws
-// 2 random RHETORIC items regardless of rung. Combined with vt/pt/gt all being identical too, and the
+// NOTE (historical — see the rungs 10-12 staggering fix above for the current, no-longer-identical state):
+// at the time this gc fix landed, tech:1 was identical on all of rungs 9-12, so it only differentiated
+// rung 8 (no Block E) from rung 9+ (has Block E) — it did NOT yet differentiate rungs 9/10/11/12 from
+// each other, since Block E drew a fixed 2 random RHETORIC items regardless of rung back then. Combined
+// with vt/pt/gt all being identical too, and the
 // writing-challenge block being ungraded:true (commit 4bd9ee8), the graded MTOTAL (Blocks A/C/D/E) was
 // byte-identical across all four rungs (20/20/20/20) — the mastery gate advanced a child through 4 rungs
 // on literally the same graded difficulty each time. First fixed the same way rungs 6-8 were staggered
@@ -1533,8 +1536,9 @@ function ws_english_sarah(li,book){const L=LEVELS.sarah.english[li];let blocks=[
   // every other knob it doesn't explicitly exclude), so the draw count now actually grows with it —
   // 1+L.tech, capped at the bank's own size — instead of staying dead-flag-pinned at exactly 2
   // forever regardless of tier (see growth-map-exhaustive-audit finding, english/sarah Block E).
-  // Base hand-authored rungs 9-12 all set tech:1, so 1+1=2 — identical to the old fixed slice(0,2),
-  // no behavior change there; only synthetic rungs past rung 12 actually escalate.
+  // Base hand-authored rungs 9-10 set tech:1 (1+1=2, same item count as the old fixed slice(0,2)) —
+  // but rungs 11-12 already climb to tech:2/tech:3 (3/4 items) on the hand-authored ladder itself,
+  // see the rungs 10-12 staggering fix above; synthetic rungs past rung 12 keep escalating from there.
   const td=L.write==='rhetoric'
    ? shuf([RHETORIC.find(d=>d.name==='Rhetorical question'),RHETORIC.find(d=>d.name==='Rule of three')])
    : shuf(RHETORIC).slice(0,Math.min(RHETORIC.length,1+L.tech));
