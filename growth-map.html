@@ -1212,11 +1212,11 @@ function ws_maths_mirayah(li){const L=LEVELS.mirayah.maths[li];let blocks=[],ans
  // K3's Venn sort gains a third circle (multiples of 3, same "sort these numbers" skill, one more
  // category to track at once) — no new curriculum claims, just fuller use of content already present.
  if(L.data){const tier=L.data,CATS=[['🍎','apples'],['🍌','bananas'],['🍇','grapes'],['🍊','oranges'],['🍓','strawberries']];
-  const chosen=shuf(CATS).slice(0,tier>=2?4:3),vals=chosen.map(()=>R(2,9)),maxV=Math.max(...vals),iMax=vals.indexOf(maxV),iMin=vals.indexOf(Math.min(...vals));
+  const chosen=shuf(CATS).slice(0,tier>=2?4:3),vals=chosen.map(()=>R(2,9)),maxV=Math.max(...vals),minV=Math.min(...vals),iMax=vals.indexOf(maxV),iMin=vals.indexOf(minV),tie=(maxV===minV);
   const it=[],a=[];
   const pic=chosen.map((c,i)=>c[0].repeat(vals[i])+'  ('+c[1]+')').join('<br>');
-  it.push('K1)  Pictograph — each picture = 1 fruit:<br>'+pic+'<br>How many '+chosen[iMax][1]+' were counted, and how many more '+chosen[iMax][1]+' are there than '+chosen[iMin][1]+'?');
-  a.push(vals[iMax]+' '+chosen[iMax][1]+'; '+(vals[iMax]-vals[iMin])+' more');
+  it.push('K1)  Pictograph — each picture = 1 fruit:<br>'+pic+'<br>'+(tie?'Every fruit was counted the same number of times ('+maxV+' each)! Which fruit would you restock first, and why?':'How many '+chosen[iMax][1]+' were counted, and how many more '+chosen[iMax][1]+' are there than '+chosen[iMin][1]+'?'));
+  a.push(tie?'all tied at '+maxV+' each — accept any fruit with reasoning':vals[iMax]+' '+chosen[iMax][1]+'; '+(vals[iMax]-vals[iMin])+' more');
   let gridRows='';for(let r=maxV+1;r>=1;r--)gridRows+='<tr>'+chosen.map(()=>'<td style="width:26px;height:20px;border:1px solid #999"></td>').join('')+'</tr>';
   const axisRow='<tr>'+chosen.map(c=>'<td style="text-align:center;font-size:15px;border-top:2px solid #333">'+c[0]+'</td>').join('')+'</tr>';
   it.push('K2)  Bar graph — shade one square per fruit ('+chosen.map((c,i)=>c[1]+': '+vals[i]).join(', ')+'):<br><table style="border-collapse:collapse;margin:4px 0">'+gridRows+axisRow+'</table>Which fruit has the tallest bar?');
@@ -1233,7 +1233,7 @@ function ws_maths_mirayah(li){const L=LEVELS.mirayah.maths[li];let blocks=[],ans
    a.push('only A: '+(onlyA.join(', ')||'none')+' · only B: '+(onlyB.join(', ')||'none')+' · both: '+(both.join(', ')||'none')+' · neither: '+(neither.join(', ')||'none'));
   }
   it.push('K4)  What does the fruit data tell you? If the shop can only restock ONE fruit this week, which should it be, and why?');
-  a.push(chosen[iMax][1]+' — accept any reasoning that references it being counted the most');
+  a.push(tie?'all tied at '+maxV+' each — accept any fruit with reasoning':chosen[iMax][1]+' — accept any reasoning that references it being counted the most');
   blocks.push({h:'K. Data handling — pictograph, bar graph & Venn',items:it,write:2});ans.push('K: '+a.join(' | '));}
  // L telling the time — hour & half-hour (clock:1), pushing to 5-minute intervals (clock:2), both
  // analogue (an inline-SVG clock face) and digital. School (PYP2) covers hour/half-hour reading;
