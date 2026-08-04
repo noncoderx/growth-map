@@ -1808,10 +1808,16 @@ function ws_science_mirayah(li){const L=SCI_MIRAYAH[li];let blocks=[],ans=[];
  const fs=shuf(src.facts).slice(0,boost?src.facts.length:4);
  blocks.push({h:'B. What do you know?',items:fs.map((f,i)=>(i+1)+')  '+f[0]),write:1});
  ans.push('B: '+fs.map((f,i)=>(i+1)+') '+f[1]).join('  '));
- const sc=boost?[src.sc[src.sc.length-1]].concat(shuf(src.sc.slice(0,-1)).slice(0,Math.min(src.sc.length,1+boost)-1)):[P(src.sc)];
+ // Delivery bug (found in growth-map-exhaustive-audit, same class as ws_science_sarah's fix in
+ // commit d4ea56a): the non-boosted branch drew ONE random sc/method item ([P(src.sc)]), so the
+ // hardest thinking question in the bank was never guaranteed to appear on a mastery-check sheet —
+ // a child could pass every level-up on the easiest ~2/3 of the bank and never see the hardest one.
+ // Fix: mirror ws_science_sarah's non-boosted formula — always guarantee the hardest (last-index)
+ // item and serve 2 instead of 1, raising the thinking-vs-recall share to match Sarah's ladder.
+ const sc=boost?[src.sc[src.sc.length-1]].concat(shuf(src.sc.slice(0,-1)).slice(0,Math.min(src.sc.length,1+boost)-1)):[src.sc[src.sc.length-1]].concat(shuf(src.sc.slice(0,-1)).slice(0,Math.min(src.sc.length,2)-1));
  blocks.push({h:'C. Look & think',items:sc.map(s=>s[0]),write:1});
  ans.push('C: '+sc.map(s=>s[1]).join(' | '));
- const me=boost?[src.method[src.method.length-1]].concat(shuf(src.method.slice(0,-1)).slice(0,Math.min(src.method.length,1+boost)-1)):[P(src.method)];
+ const me=boost?[src.method[src.method.length-1]].concat(shuf(src.method.slice(0,-1)).slice(0,Math.min(src.method.length,1+boost)-1)):[src.method[src.method.length-1]].concat(shuf(src.method.slice(0,-1)).slice(0,Math.min(src.method.length,2)-1));
  blocks.push({h:'D. Little scientist — guess, then test 🔎',items:me.map(m=>m[0]),write:1});
  ans.push('D: '+me.map(m=>m[1]).join(' | '));
  blocks.push({h:'E. Try it (with a grown-up)',items:[src.lab],write:1,ungraded:true});
