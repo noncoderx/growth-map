@@ -1850,8 +1850,9 @@ function ws_music(gk,li){const lad=LEVELS[gk].music,L=lad[li];
     sight/aural) are all plain strings, so intensifyRung's generic numeric scaling only
     inflates `mins` past the last hand-authored rung — the printed piece/technique/sight/
     aural text used to repeat Grade 8 verbatim forever. `boost` drives a real, escalating
-    piece-practice ask here instead, so each successive synthetic rung actually asks for more. */
- const boostNote=L.boost?' — Independent Study tier '+L.boost+': add a second recital-ready piece and push the tempo/dynamics further':'';
+    piece-practice ask here instead: the number of extra recital-ready pieces requested
+    scales with the tier, the same way swim scales extra rounds and riding scales repeats. */
+ const boostNote=L.boost?' — Independent Study tier '+L.boost+': polish '+L.boost+' extra recital-ready piece'+(L.boost>1?'s':'')+' beyond the set list, pushing tempo/dynamics further':'';
  return{title:'🎵 Music — '+who(gk),sub:'Level '+(li+1)+'/'+lad.length+' · '+L.n,level:'Graded music pathway',keyLabel:'Teacher / parent notes',note:'Little and often beats one long session. Enjoy the music.',
  blocks:[
   {h:'Technique & scales',items:[L.tech]},
@@ -1859,7 +1860,7 @@ function ws_music(gk,li){const lad=LEVELS[gk].music,L=lad[li];
   {h:'Sight-reading',items:[L.sight]},
   {h:'Aural / listening',items:[L.aural]},
   {h:'Practice time',items:['Aim for about '+L.mins+' minutes today.'],write:1}
- ],ans:['✅ Level up when: this rung’s piece is performance-ready and the scales are secure.'+(L.boost?' Plus the tier-'+L.boost+' extra piece polished.':'')]};}
+ ],ans:['✅ Level up when: this rung’s piece is performance-ready and the scales are secure.'+(L.boost?' Plus '+L.boost+' extra piece'+(L.boost>1?'s':'')+' polished.':'')]};}
 function ws_riding(gk,li){const lad=LEVELS[gk].riding,L=lad[li];
  /* Same dead-flag class as ws_swim: RIDE's fields (ground/flat/ex/safe) are all plain
     strings, so intensifyRung's generic numeric scaling has nothing to grab past the last
