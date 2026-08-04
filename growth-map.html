@@ -869,8 +869,7 @@ function m_logic(L){const nm=[...NAMES].sort(()=>Math.random()-0.5);
    'Both '+B+' and '+C+' have more '+item+' than '+M+'.',
    J+' has more '+item+' than '+M+', but less than '+B+'.'];
  return{h:'H. Logic puzzle — who definitely has the least? (AMC 8 style)',
-  items:[F+', '+B+', '+J+', '+M+' and '+C+' each have a different amount of '+item+'.  '+clues.join('  '),
-   'Who definitely has the least '+item+'? You will NOT be able to work out everyone’s exact order — explain how you can still be sure of the answer.'],
+  items:[F+', '+B+', '+J+', '+M+' and '+C+' each have a different amount of '+item+'.  '+clues.join('  ')+'  Who definitely has the least '+item+'? You will NOT be able to work out everyone’s exact order — explain how you can still be sure of the answer.'],
   write:4,
   a:'H: '+M+' has the least. '+F+' > '+B+' > '+J+' > '+M+', and '+C+' > '+M+' too — so every other person has more '+item+' than '+M+'; '+M+' must be last even though '+C+'’s exact rank stays unknown.'};}
 
