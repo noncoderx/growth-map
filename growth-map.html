@@ -809,7 +809,7 @@ function m_algebra(L){const B=[],a=[];const ch=L.chal||1,bo=(L.boost||0)+Math.ma
 
 function m_geometry(L){const n=(L&&L.proof)?6:(L&&L.comp)?5:4,opt=R(0,n-1),ch=(L&&L.chal)||5,bo=((L&&L.boost)||0)+Math.max(0,ch-5)*3+((L&&L.comp)?2:0);
  if(opt===0){const l=R(4,12+bo),w=R(3,9+bo);return{h:'G. Geometry — a rectangle',items:['A rectangle is '+l+' cm long and '+w+' cm wide. Find its area and its perimeter.'],write:2,a:'G: area = '+(l*w)+' cm², perimeter = '+(2*(l+w))+' cm'};}
- if(opt===1){const a1=R(30,80+bo),a2=R(30,150-a1+bo);return{h:'G. Geometry — a triangle',items:['Two angles of a triangle are '+a1+'° and '+a2+'°. Find the third angle.'],write:2,a:'G: '+(180-a1-a2)+'°'};}
+ if(opt===1){const boG=Math.min(bo,20),a1=R(30,80+boG),a2=R(30,150-a1+boG);return{h:'G. Geometry — a triangle',items:['Two angles of a triangle are '+a1+'° and '+a2+'°. Find the third angle.'],write:2,a:'G: '+(180-a1-a2)+'°'};}
  if(opt===2){const b=R(4,12+bo),h=R(2,5+bo)*2;return{h:'G. Geometry — a triangle’s area',items:['A triangle has base '+b+' cm and height '+h+' cm. Find its area.'],write:2,a:'G: '+(b*h/2)+' cm²'};}
  if(opt===3){const l1=R(7,14+bo),w1=R(5,9+bo),l2=R(2,5+bo),w2=R(2,4+bo),tot=l1*w1+l2*w2;return{h:'G. Geometry — a composite shape',items:['A room is an L-shape made of two rectangles: '+l1+' m × '+w1+' m, plus a smaller '+l2+' m × '+w2+' m section. Find the total floor area.'],write:3,a:'G: '+tot+' m²'};}
  if(opt===4){const big=R(10,16+bo),cut=R(2,Math.min(5+bo,8)),tot=big*big,shaded=tot-cut*cut;return{h:'G. Geometry — a shaded region',items:['A square garden is '+big+' m × '+big+' m. A square pond '+cut+' m × '+cut+' m is built in one corner. Find the area of the garden NOT covered by the pond.'],write:3,a:'G: '+shaded+' m²'};}
