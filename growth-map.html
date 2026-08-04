@@ -1657,12 +1657,11 @@ function ws_english_mirayah(li,book){const L=LEVELS.mirayah.english[li];let bloc
  // D mini story comprehension (rung-gated); qs:1 adds one harder inference question on top.
  // On hand-authored rungs (L.boost unset) mini also picks WHICH SLICE of the bank to draw from: mini:1
  // (rungs 3-5) draws only from MINISTORY[0-5] — concrete recall stories whose own inference question
- // ('x') asks straightforward how-did-they-feel/why causal reasoning. mini:2 (rungs 6-7 and 10) draws
- // from MINISTORY[6-11] — the fable/moral stories (littering, the crow's feathers) and trait/metaphor
- // questions (what kind of sister is Maya, why did the leaf remind the fly of his name) that require
- // theme/character abstraction, a genuinely higher comprehension skill. mini:3 (rungs 8-9) narrows
- // further to MINISTORY[9-11] — just the fly/monkey/crow fable trio — the guaranteed-hardest,
- // abstraction-only slice of the bank. Previously `mini` was read only
+ // ('x') asks straightforward how-did-they-feel/why causal reasoning. mini:2 and mini:3 (rungs 6-9,
+ // plus rung 10's separate li>=9 branch) do NOT slice MINISTORY itself — the pool-selection comments
+ // further below (search MINISTORY_MED/MINISTORY_LONG) document the current logic: mini>=3 selects
+ // the harder half of MINISTORY_MED, and li>=9 moves to MINISTORY_LONG regardless of mini. Previously
+ // `mini` was read only
  // as a bare truthy check, so 1 vs 2 picked from the identical full 12-story pool with no real difficulty
  // step — the escalation implied by 0,0,1,1,1,1,2,2,2,2 was decorative. On synthetic "Independent Study"
  // rungs (L.boost set by intensifyRung), mini and qs used to just stay truthy forever — intensifyRung kept
