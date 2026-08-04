@@ -841,9 +841,13 @@ function m_logic(L){const nm=[...NAMES].sort(()=>Math.random()-0.5);
    same RNG tier bucket and draw statistically identical numbers. bignum's tier baseline lines up
    with L.chal at the rung that FIRST introduces each tier (tier N first appears at chal N), so
    bo=max(0,ch-tier) is 0 on the introducing rung and >0 once bnChal (or a naturally-higher chal)
-   pushes past it — widening the range instead of repeating it. */
+   pushes past it — widening the range instead of repeating it.
+   +L.boost — rung 12 (tier 6, the ceiling) never had a bnChal override, so bo stayed pinned at 0
+   forever once intensifyRung started cloning it for Independent Study (chal is pinned to 6 = tier
+   there too). Adding L.boost here (same fix as m_bigmul's bo) lets Block I keep widening past the
+   hand-authored ladder instead of freezing at RNGbase[5] for every future level-up. */
 function m_placevalue(L){const tier=Math.min(L.bignum||1,6);
- const ch=L.bnChal||L.chal||1,bo=Math.max(0,ch-tier);
+ const ch=L.bnChal||L.chal||1,bo=Math.max(0,ch-tier)+(L.boost||0);
  const RNGbase=[[1000,999999],[10000,9999999],[1000000,19999999],[10000000,99999999],[100000000,999999999],[1000000000,9999999999]][tier-1];
  const RNG=bo?[RNGbase[0],Math.round(RNGbase[1]*(1+0.5*bo))]:RNGbase;
  const fmtIndian=n=>{let s=String(Math.trunc(n));if(s.length<=3)return s;let last3=s.slice(-3),rest=s.slice(0,-3);rest=rest.replace(/\B(?=(\d{2})+(?!\d))/g,',');return rest+','+last3;};
