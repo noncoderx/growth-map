@@ -688,7 +688,15 @@ function m_words(L){const B=[],a=[];let idx=0;const num=()=>P(NAMES);const fmt=p
  else{const who=num(),p=L.mul2?R(12,20+bo):R(6,12+bo),q=L.mul2?R(8,15):R(4,9),extra=R(3,12+bo),total=p*q+extra;B.push((++idx)+')  '+who+' packs '+p+' trays of eggs with '+q+' eggs in each tray, then finds '+extra+' more eggs from a friend. How many eggs does '+who+' have in total?');a.push(total+' eggs');}
  // 2) a steps-based problem (2 or 3 step)
  if(L.s>=3&&L.dec){const perP=R(2,19)*5,g=R(3,5),remP=perP*g,s1P=R(2,19)*5,s2P=R(2,19)*5,totP=remP+s1P+s2P,who=num();B.push((++idx)+')  '+who+' has ₹'+fmt(totP)+'. '+who+' buys a pencil for ₹'+fmt(s1P)+' and a rubber for ₹'+fmt(s2P)+', then splits what is left equally among '+g+' friends. How much does each friend get?');a.push('₹'+fmt(perP)+' each');}
- else if(L.s>=3){const per=L.longmul?R(6,15):R(3,7),g=R(3,5),rest=per*g,m=L.longmul?R(10,40):R(4,15),n=L.longmul?R(10,40):R(4,15),S=rest+m+n;B.push((++idx)+')  A shop starts with '+S+' stickers. It sells '+m+' in the morning and '+n+' in the afternoon, then packs the rest equally into '+g+' boxes. How many stickers per box?');a.push(per+' per box');}
+ // wBo — like m_placevalue's bnChal/m_bigmul's bmChal, an escape hatch for this branch, which was
+ // gated ONLY on L.longmul (boolean) with no further scaling, unlike every sibling generator in
+ // this file. L.longmul is false for rungs 1-2 of this branch (chal:2) then true for 7 consecutive
+ // rungs (chal 3->6), so item 2 drew the exact same R(6,15)/R(10,40)/R(10,40) range at 'Multiplication
+ // mastery' (chal:3) and at 'The quantitative spike' (chal:6, six real level-ups later). Folding
+ // L.chal in past the tier-introducing baseline (3 for longmul, 2 for non-longmul) widens per/m/n's
+ // upper bounds as chal climbs within the same-longmul run instead of freezing (see
+ // growth-map-exhaustive-audit finding, maths/sarah m_words Block B item 2, rungs 6-12).
+ else if(L.s>=3){const wBo=Math.max(0,(L.chal||1)-(L.longmul?3:2));const per=L.longmul?R(6,15+3*wBo):R(3,7+wBo),g=R(3,5),rest=per*g,m=L.longmul?R(10,40+10*wBo):R(4,15+3*wBo),n=L.longmul?R(10,40+10*wBo):R(4,15+3*wBo),S=rest+m+n;B.push((++idx)+')  A shop starts with '+S+' stickers. It sells '+m+' in the morning and '+n+' in the afternoon, then packs the rest equally into '+g+' boxes. How many stickers per box?');a.push(per+' per box');}
  else if(R(0,1)===0){const p=L.mul2?R(11,18):R(4,8),q=L.mul2?R(6,12):R(4,9),give=R(3,p*q-2);B.push((++idx)+')  '+num()+' buys '+p+' packets of stickers with '+q+' in each, then gives '+give+' away. How many are left?');a.push(p*q-give);}
  else{const g=L.mul2?R(4,8):R(2,6),share=L.mul2?R(7,15):R(3,9),T=g*share,n=R(1,g-1);B.push((++idx)+')  '+num()+' shares '+T+' mangoes equally among '+g+' friends. If '+n+' of the friends eat their whole share, how many mangoes have been eaten in total?');a.push((share*n)+' mangoes eaten ('+share+' each)');}
  // 3) a change / division problem
