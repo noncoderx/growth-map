@@ -1219,9 +1219,18 @@ function ws_maths_mirayah(li){const L=LEVELS.mirayah.maths[li];let blocks=[],ans
     else{start=R(20,50);total=R(start+10,Math.max(start+11,addCap));}
     blocks.push({h:'G. Story sum',items:[start+' birds were sitting on a tree. A few more joined. Now there are '+total+' birds. How many birds joined?  ____'],write:1});ans.push('G: '+(total-start));}
   }else{
+   // li0/li2 identical-clamp bug (found in exhaustive audit) — the floors below (9/6 add, 6/12/5
+   // subtract) were already saturated by li2's own addMax:20/subMax:20 (floor(20*0.45)=9,
+   // floor(20*0.3)=6, floor(20*0.6)=12, floor(20*0.25)=5 — every floor exactly met, not exceeded),
+   // so li0 (addMax:10, subMax:5), which sits well under those same floors, collapsed onto the
+   // identical a/b ranges as li2 two mastery-gated level-ups later (500-sample check: both li0 and
+   // li2 produced {aMin:3,aMax:12,bMin:1,bMax:6} for Block G). Fixed: lowered each floor constant so
+   // li0's smaller addCap/subCap actually shrinks the range instead of being swallowed by the floor,
+   // while li2's addCap/subMax:20 still exceeds every new floor and so reproduces its exact prior
+   // 3-9/2-6 (add) and 6-12/1-5 (subtract) ranges unchanged.
    const kind=R(0,1),addCap=L.addMax||20,subCap=L.subMax||20,pic=li===0?' (draw a picture to help!)':'';
-   if(kind===0){const a=R(3,Math.max(9,Math.floor(addCap*0.45))),b=R(2,Math.max(6,Math.floor(addCap*0.3)));blocks.push({h:'G. Story sum',items:[P(NAMES)+' has '+a+' balloons and gets '+b+' more. How many now?  ____'+pic],write:1});ans.push('G: '+(a+b));}
-   else{const a=R(Math.max(6,Math.floor(subCap*0.3)),Math.max(12,Math.floor(subCap*0.6))),b=R(1,Math.max(5,Math.floor(subCap*0.25)));blocks.push({h:'G. Story sum',items:[P(NAMES)+' had '+a+' sweets and ate '+b+'. How many left?  ____'+pic],write:1});ans.push('G: '+(a-b));}
+   if(kind===0){const a=R(3,Math.max(6,Math.floor(addCap*0.45))),b=R(2,Math.max(4,Math.floor(addCap*0.3)));blocks.push({h:'G. Story sum',items:[P(NAMES)+' has '+a+' balloons and gets '+b+' more. How many now?  ____'+pic],write:1});ans.push('G: '+(a+b));}
+   else{const a=R(Math.max(4,Math.floor(subCap*0.3)),Math.max(7,Math.floor(subCap*0.6))),b=R(1,Math.max(3,Math.floor(subCap*0.25)));blocks.push({h:'G. Story sum',items:[P(NAMES)+' had '+a+' sweets and ate '+b+'. How many left?  ____'+pic],write:1});ans.push('G: '+(a-b));}
   }
  }
  // H two-step — twostep:1 (rung9) was a magnitude-dead flag: it was read but a/b/c were hardcoded to
