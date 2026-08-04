@@ -969,7 +969,8 @@ function ws_maths_mirayah(li){const L=LEVELS.mirayah.maths[li];let blocks=[],ans
     else{line=(i+1)+')  '+x+' + ____ = '+bTarget;av=y;}
    }
    nb.push(line);a.push(av);}
-  blocks.push({h:'A. Number bonds to '+bTarget,two:true,items:nb});ans.push('A: '+a.join(', '));}
+  const bHead=L.bondsForm>=2?'A. Bridging to '+bTarget:'A. Number bonds to '+bTarget;
+  blocks.push({h:bHead,two:true,items:nb});ans.push('A: '+a.join(', '));}
  // B add — regroup:1 (rungs 7-8) forces real carrying (NCERT ch.6 "36+47=83": ones 6+7=13 carries a ten),
  // not merely allow it: ones digits are picked so xo+yo>=10 every time, tens picked so the sum stays <=cap.
  // regroup:2 (rung 9 "Two-step (little)") was previously identical to regroup:1 — addMax/subMax/bonds cap
