@@ -2356,7 +2356,8 @@ document.getElementById('masteryOverlay').addEventListener('click',e=>{if(e.targ
 const SB_URL='https://fuajabuexuqjoqndbeed.supabase.co';
 const SB_KEY='sb_publishable_GvCjPmsNOd56vxVrMCeufw_KtIze4O9';
 const SB_ROW_KEY='family';
-const sb=window.supabase.createClient(SB_URL,SB_KEY);
+let sb=null;
+try{ if(window.supabase) sb=window.supabase.createClient(SB_URL,SB_KEY); }catch(e){/* CDN blocked/offline — app still works fully local */}
 
 function mergeState(local,remote){
  if(!remote)return local;
@@ -2396,11 +2397,13 @@ function applyState(s){
 }
 
 async function writeCloudRaw(stateObj){
+ if(!sb)return;
  try{await sb.from('state').upsert({key:SB_ROW_KEY,data:stateObj,updated_at:new Date().toISOString()});}
  catch(e){/* offline or blocked — local save already happened, not fatal */}
 }
 
 async function pushCloud(){
+ if(!sb)return;
  // Merge-before-write, never a blind overwrite — this exact bug was found and
  // fixed during the 2026-07-22 build: device A pushes real advances, device B
  // (never refreshed, holding a stale local snapshot) later saves anything and
@@ -2413,10 +2416,12 @@ async function pushCloud(){
   applyState(merged);
   saveLocal();
   await writeCloudRaw(merged);
+  buildOverview();buildGirl('sarah');buildGirl('mirayah');
  }catch(e){/* offline or blocked — local save already happened, not fatal */}
 }
 
 async function pullAndMergeCloud(silent){
+ if(!sb)return;
  try{
   const {data,error}=await sb.from('state').select('data').eq('key',SB_ROW_KEY).maybeSingle();
   if(error||!data)return;
@@ -2428,9 +2433,11 @@ async function pullAndMergeCloud(silent){
  }catch(e){/* offline — local state stands, will retry on next load/change */}
 }
 
-sb.channel('state-changes')
- .on('postgres_changes',{event:'*',schema:'public',table:'state',filter:`key=eq.${SB_ROW_KEY}`},()=>{pullAndMergeCloud(true);})
- .subscribe();
+if(sb){
+ sb.channel('state-changes')
+  .on('postgres_changes',{event:'*',schema:'public',table:'state',filter:`key=eq.${SB_ROW_KEY}`},()=>{pullAndMergeCloud(true);})
+  .subscribe();
+}
 
 /* ===== INIT ===== */
 load();
