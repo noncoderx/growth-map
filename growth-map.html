@@ -2267,7 +2267,10 @@ async function awardPoints(gk,sheetId,correct){
   await sb.from('sheets').update({status:'approved',points_awarded:correct,final_verdict:{correct},reviewed_at:new Date().toISOString()}).eq('id',sheetId);
   await refreshWalletCache(gk);
   toast('⭐ +'+correct+' points!');
- }catch(e){toast('Points couldn\'t be saved — check your connection and try again from the Wallet screen.');}
+ }catch(e){
+  await refreshWalletCache(gk); /* pull whatever actually landed, so the balance is never stale even on partial failure */
+  toast('⚠️ Points may not have fully saved — check the Wallet balance to confirm.');
+ }
 }
 function retryMastery(){const gk=MGK,sk=MSK;closeMasteryCheck();if(gk&&sk){makeWS(gk,sk);toast('📝 Fresh practice sheet — same level.');}}
 
