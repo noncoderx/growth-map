@@ -2427,7 +2427,14 @@ function buildGirl(gk){const g=DATA[gk],bar=document.getElementById('subtabs-'+g
  bar.appendChild(wb);
  keys.forEach(sk=>{const s=g.subjects[sk],b=document.createElement('button');b.className='subtab';b.dataset.sk=sk;b.textContent=s.icon+' '+s.label;b.onclick=()=>selSub(gk,sk,b);bar.appendChild(b);});
  SOON.forEach(t=>{const b=document.createElement('button');b.className='subtab soon';b.disabled=true;b.textContent=t+' · soon';bar.appendChild(b);});
- if(gk===KID_VIEW)wb.click();else selSub(gk,keys[0],bar.querySelector('.subtab[data-sk="'+keys[0]+'"]'));}
+ if(gk===KID_VIEW){
+  if(!ACTIVE_SUBTAB[gk]||ACTIVE_SUBTAB[gk]==='wallet'){
+   wb.click(); /* first-ever build for this kid, or rebuild while already on Wallet — (re)land on Wallet */
+  }else{
+   const activeBtn=bar.querySelector('.subtab[data-sk="'+ACTIVE_SUBTAB[gk]+'"]');
+   if(activeBtn)selSub(gk,ACTIVE_SUBTAB[gk],activeBtn);else wb.click(); /* rebuild while kid is on a subject tab — stay put, don't force back to Wallet */
+  }
+ }else selSub(gk,keys[0],bar.querySelector('.subtab[data-sk="'+keys[0]+'"]'));}
 function selSub(gk,sk,btn){const bar=document.getElementById('subtabs-'+gk);
  ACTIVE_SUBTAB[gk]=sk;
  bar.querySelectorAll('.subtab').forEach(x=>{if(!x.classList.contains('soon')){x.style.cssText='';}});
