@@ -161,6 +161,11 @@ const R=(a,b)=>Math.floor(Math.random()*(b-a+1))+a, P=a=>a[Math.floor(Math.rando
 function shuf(a){a=a.slice();for(let i=a.length-1;i>0;i--){let j=R(0,i);[a[i],a[j]]=[a[j],a[i]];}return a;}
 const NAMES=['Sarah','Mirayah','Maya','Aarav','Diya','Kabir','Noor','Zoya'];
 
+const KID_VIEW=(()=>{
+ const p=new URLSearchParams(location.search).get('kid');
+ return (p==='sarah'||p==='mirayah')?p:null;
+})();
+
 /* ===== TASK DATA (daily tasks + missions per subject) ===== */
 const DATA={
  sarah:{name:'Sarah',emoji:'👧',age:8,subjects:{
@@ -2347,7 +2352,7 @@ function walletHTML(gk){
  let h='<div class="ebar"><h2>💰 Wallet — '+g.name+'</h2></div>';
  h+='<div class="hz-ring" style="--arc:'+arc+'deg"><div class="hz-ring-inner"><div class="hz-ring-lab">points owed</div><div class="hz-ring-num">'+bal+'</div></div></div>';
  h+='<div class="lvline" style="text-align:center;margin:6px 0 16px">🔥 '+streak+' day streak</div>';
- h+='<div class="actions" style="justify-content:center;margin-bottom:16px">'
+ if(!KID_VIEW)h+='<div class="actions" style="justify-content:center;margin-bottom:16px">'
   +'<button class="btn primary" data-act="uploadPhotoPrompt" data-gk="'+gk+'">📷 Upload today\'s sheet</button>'
   +'<button class="btn" data-act="payout" data-gk="'+gk+'">💸 Paid out — reset to 0</button>'
   +'</div>';
@@ -2422,7 +2427,7 @@ function buildGirl(gk){const g=DATA[gk],bar=document.getElementById('subtabs-'+g
  bar.appendChild(wb);
  keys.forEach(sk=>{const s=g.subjects[sk],b=document.createElement('button');b.className='subtab';b.dataset.sk=sk;b.textContent=s.icon+' '+s.label;b.onclick=()=>selSub(gk,sk,b);bar.appendChild(b);});
  SOON.forEach(t=>{const b=document.createElement('button');b.className='subtab soon';b.disabled=true;b.textContent=t+' · soon';bar.appendChild(b);});
- selSub(gk,keys[0],bar.querySelector('.subtab[data-sk="'+keys[0]+'"]'));}
+ if(gk===KID_VIEW)wb.click();else selSub(gk,keys[0],bar.querySelector('.subtab[data-sk="'+keys[0]+'"]'));}
 function selSub(gk,sk,btn){const bar=document.getElementById('subtabs-'+gk);
  ACTIVE_SUBTAB[gk]=sk;
  bar.querySelectorAll('.subtab').forEach(x=>{if(!x.classList.contains('soon')){x.style.cssText='';}});
@@ -2596,6 +2601,10 @@ buildOverview();
 buildGirl('sarah');
 buildGirl('mirayah');
 pullAndMergeCloud(); // async — page renders instantly from local/hash first, upgrades to merged cross-device state moments later
+if(KID_VIEW){
+ const topBtn=document.querySelector('.tab[data-pane="'+KID_VIEW+'"]');if(topBtn)topBtn.click();
+ setTimeout(()=>{const wb=document.querySelector('#subtabs-'+KID_VIEW+' .subtab[data-sk="wallet"]');if(wb)wb.click();},50);
+}
 </script>
 </body>
 </html>
