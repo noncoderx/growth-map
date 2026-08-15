@@ -2178,6 +2178,32 @@ function downloadWS(){if(!CURWS){toast('Press “Make worksheet” first.');retu
  const doc='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+CURWS.title+'</title><style>body{background:#fff;margin:0;padding:18px}'+css+'</style></head><body>'+wsHTML(CURWS)+'</body></html>';
  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([doc],{type:'text/html'}));a.download=CURWS.title.replace(/[^a-z0-9]+/gi,'-')+'-L'+(LEVEL[CURGK][CURSK]+1)+'.html';document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(()=>URL.revokeObjectURL(a.href),1500);}
 
+function uploadPhotoPrompt(gk,sk){
+ if(!sk){ /* called from the Wallet screen with only gk — find the most recent pending_upload sheet for this kid */
+  toast('Open the subject\'s worksheet screen and press "Upload photo" there — pick the sheet you just uploaded from.');
+  return;
+ }
+ if(!CURSHEETID){toast('Press "Make worksheet" first, then upload once it\'s printed and filled in.');return;}
+ const input=document.createElement('input');
+ input.type='file';input.accept='image/*';input.capture='environment';
+ input.onchange=()=>{if(input.files&&input.files[0])uploadSheetPhoto(CURSHEETID,input.files[0]);};
+ input.click();
+}
+async function uploadSheetPhoto(sheetId,file){
+ toast('📤 Uploading…');
+ try{
+  const path=sheetId+'-'+Date.now()+'.'+((file.name.split('.').pop())||'jpg');
+  const {error:upErr}=await sb.storage.from('sheet-photos').upload(path,file,{upsert:false});
+  if(upErr){toast('Upload failed: '+upErr.message);return;}
+  const {data:pub}=sb.storage.from('sheet-photos').getPublicUrl(path);
+  await sb.from('sheets').update({photo_url:path}).eq('id',sheetId);
+  toast('🤖 Grading…');
+  const {data,error}=await sb.functions.invoke('grade-sheet',{body:{sheet_id:sheetId}});
+  if(error){toast('AI grading unavailable — you can still grade by hand in the mastery check.');return;}
+  toast('✅ Graded — press "✓ Done — level up" to review and confirm.');
+ }catch(e){toast('Upload failed — check your connection.');}
+}
+
 /* ===== THE STEP GAME: Done → level up → next sheet ===== */
 function isAcad(sk){return sk==='english'||sk==='maths'||sk==='science';}
 const MASTERY_PASS=0.8; /* need 80%+ correct (per answer key) to level up an academic subject */
@@ -2333,6 +2359,7 @@ function panelHTML(gk,sk){const g=DATA[gk],s=g.subjects[sk];const li=LEVEL[gk][s
   +levelRail(gk,sk)
   +'<div class="actions" style="margin-top:12px">'
   +'<button class="btn" style="background:'+s.accent+';border-color:'+s.accent+';color:#0f1226" data-act="makeWS" data-gk="'+gk+'" data-sk="'+sk+'">'+makeLbl+'</button>'
+  +(acad?'<button class="btn" data-act="uploadPhotoPrompt" data-gk="'+gk+'" data-sk="'+sk+'">📷 Upload photo</button>':'')
   +'<button class="btn donebtn" data-act="doneLevelUp" data-gk="'+gk+'" data-sk="'+sk+'">✓ Done — level up →</button>'
   +'<button class="btn stepdown" data-act="stepDown" data-gk="'+gk+'" data-sk="'+sk+'" title="Too hard? step back a rung">↩︎</button>'
   +'<button class="btn" data-act="printWS">🖨️ Print</button>'
@@ -2400,6 +2427,8 @@ document.addEventListener('click', e=>{
  else if(act==='finishBook') finishBook(gk);
  else if(act==='nextBook') nextBook(gk);
  else if(act==='goSubject') goToSubject(gk,sk);
+ else if(act==='uploadPhotoPrompt') uploadPhotoPrompt(gk,sk);
+ else if(act==='payout') payout(gk);
 });
 document.addEventListener('input', e=>{
  const t=e.target.closest('[data-bookinput]'); if(!t) return;
