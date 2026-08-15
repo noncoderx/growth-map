@@ -2267,6 +2267,7 @@ function levelRail(gk,sk){const lad=LEVELS[gk][sk],here=LEVEL[gk][sk];let r='<di
 
 /* ===== WALLET (points) ===== */
 let WALLET_CACHE={sarah:{ledger:[]},mirayah:{ledger:[]}};
+let ACTIVE_SUBTAB={sarah:null,mirayah:null}; /* tracks which subtab is currently active so an in-flight wallet fetch can detect it was navigated away from and skip its stale write */
 async function refreshWalletCache(gk){
  try{
   const {data,error}=await sb.from('points_ledger').select('*').eq('kid',gk).order('created_at',{ascending:false});
@@ -2308,6 +2309,7 @@ async function renderWallet(gk){
  const root=document.getElementById('content-'+gk);
  root.innerHTML='<div class="wsempty">Loading wallet…</div>';
  await refreshWalletCache(gk);
+ if(ACTIVE_SUBTAB[gk]!=='wallet')return; /* user navigated to a different subtab while the fetch was in flight — don't clobber it with stale wallet content */
  root.innerHTML=walletHTML(gk);
 }
 
@@ -2347,12 +2349,13 @@ function wireTasks(root){const ts=root.querySelectorAll('.task'),bar=root.queryS
 function buildGirl(gk){const g=DATA[gk],bar=document.getElementById('subtabs-'+gk),keys=Object.keys(g.subjects);
  bar.innerHTML='';
  const wb=document.createElement('button');wb.className='subtab';wb.dataset.sk='wallet';wb.textContent='💰 Wallet';
- wb.onclick=()=>{bar.querySelectorAll('.subtab').forEach(x=>{if(!x.classList.contains('soon'))x.style.cssText='';});wb.style.cssText='background:'+DATA[gk].subjects[keys[0]].accent+';border-color:'+DATA[gk].subjects[keys[0]].accent+';color:#fff;font-weight:700';renderWallet(gk);};
+ wb.onclick=()=>{ACTIVE_SUBTAB[gk]='wallet';bar.querySelectorAll('.subtab').forEach(x=>{if(!x.classList.contains('soon'))x.style.cssText='';});wb.style.cssText='background:'+DATA[gk].subjects[keys[0]].accent+';border-color:'+DATA[gk].subjects[keys[0]].accent+';color:#fff;font-weight:700';renderWallet(gk);};
  bar.appendChild(wb);
  keys.forEach(sk=>{const s=g.subjects[sk],b=document.createElement('button');b.className='subtab';b.dataset.sk=sk;b.textContent=s.icon+' '+s.label;b.onclick=()=>selSub(gk,sk,b);bar.appendChild(b);});
  SOON.forEach(t=>{const b=document.createElement('button');b.className='subtab soon';b.disabled=true;b.textContent=t+' · soon';bar.appendChild(b);});
  selSub(gk,keys[0],bar.querySelector('.subtab[data-sk="'+keys[0]+'"]'));}
 function selSub(gk,sk,btn){const bar=document.getElementById('subtabs-'+gk);
+ ACTIVE_SUBTAB[gk]=sk;
  bar.querySelectorAll('.subtab').forEach(x=>{if(!x.classList.contains('soon')){x.style.cssText='';}});
  const s=DATA[gk].subjects[sk];if(btn){btn.style.cssText='background:'+s.accent+';border-color:'+s.accent+';color:#0f1226;font-weight:700';}
  renderSub(gk,sk);}
