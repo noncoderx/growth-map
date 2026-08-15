@@ -2255,9 +2255,19 @@ function confirmMastery(){
  const gk=MGK,sk=MSK;if(!gk||!sk)return;
  const correct=Math.max(0,Math.min(MTOTAL,parseInt(document.getElementById('mCorrect').value,10)||0));
  const need=Math.ceil(MTOTAL*MASTERY_PASS);
+ const sheetId=CURSHEETID;
  closeMasteryCheck();
+ if(sheetId)awardPoints(gk,sheetId,correct); /* points post on every confirm — a partial-credit sheet still earns partial points, independent of whether it also cleared the level-up bar */
  if(correct>=need){doDoneLevelUp(gk,sk);}
  else{makeWS(gk,sk);toast('Not yet — '+correct+'/'+MTOTAL+' (needed '+need+'+). Fresh sheet at the same level — practice again.');}
+}
+async function awardPoints(gk,sheetId,correct){
+ try{
+  await sb.from('points_ledger').insert({kid:gk,delta:correct,reason:sheetId});
+  await sb.from('sheets').update({status:'approved',points_awarded:correct,final_verdict:{correct},reviewed_at:new Date().toISOString()}).eq('id',sheetId);
+  await refreshWalletCache(gk);
+  toast('⭐ +'+correct+' points!');
+ }catch(e){toast('Points couldn\'t be saved — check your connection and try again from the Wallet screen.');}
 }
 function retryMastery(){const gk=MGK,sk=MSK;closeMasteryCheck();if(gk&&sk){makeWS(gk,sk);toast('📝 Fresh practice sheet — same level.');}}
 
