@@ -73,6 +73,11 @@
   .masteryActions{display:flex;flex-direction:column;gap:8px}
   .masteryActions .btn{width:100%}
   .masteryAiNote{font-size:11.5px;color:var(--hz-primary);background:var(--card2);border:1px dashed var(--line);border-radius:10px;padding:8px 10px;margin-bottom:10px;text-align:center}
+  .hz-ring{width:170px;height:170px;margin:16px auto;border-radius:50%;background:conic-gradient(var(--hz-accent) 0deg var(--arc,0deg),var(--hz-track) var(--arc,0deg) 360deg);display:flex;align-items:center;justify-content:center;position:relative}
+  .hz-ring::after{content:'';position:absolute;inset:14px;border-radius:50%;background:var(--card)}
+  .hz-ring-inner{position:relative;z-index:1;text-align:center}
+  .hz-ring-lab{font-size:10.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted)}
+  .hz-ring-num{font-size:34px;font-weight:800;color:var(--hz-primary)}
   /* paper sheet (shared by preview + print + download) */
   .sheet{font-family:Georgia,'Times New Roman',serif;color:#1c2230;max-width:820px;margin:0 auto;padding:26px}
   .sheet h1{font-size:22px;text-align:center;margin:0}
@@ -2260,6 +2265,52 @@ function levelRail(gk,sk){const lad=LEVELS[gk][sk],here=LEVEL[gk][sk];let r='<di
  r+='<div class="lvline">Rung <b>'+(here+1)+(beyond?'':' of '+BASE_LADDER_LEN[gk][sk])+'</b> — '+L.n+(top?topMsg:' · next: '+lad[here+1].n)+'</div>';
  return r;}
 
+/* ===== WALLET (points) ===== */
+let WALLET_CACHE={sarah:{ledger:[]},mirayah:{ledger:[]}};
+async function refreshWalletCache(gk){
+ try{
+  const {data,error}=await sb.from('points_ledger').select('*').eq('kid',gk).order('created_at',{ascending:false});
+  if(!error&&data)WALLET_CACHE[gk].ledger=data;
+ }catch(e){/* offline — cache stays at its last known value */}
+}
+function getBalance(gk){return WALLET_CACHE[gk].ledger.reduce((sum,r)=>sum+r.delta,0);}
+function getStreak(gk){
+ const days=new Set(WALLET_CACHE[gk].ledger.filter(r=>r.delta>0).map(r=>r.created_at.slice(0,10)));
+ let streak=0,d=new Date();
+ while(true){
+  const key=d.toISOString().slice(0,10);
+  if(days.has(key)){streak++;d.setDate(d.getDate()-1);}
+  else if(streak===0&&key===new Date().toISOString().slice(0,10)){d.setDate(d.getDate()-1);continue;} /* today with no entry yet doesn't break a streak that continues from yesterday */
+  else break;
+ }
+ return streak;
+}
+function walletHTML(gk){
+ const g=DATA[gk],bal=getBalance(gk),streak=getStreak(gk),hist=WALLET_CACHE[gk].ledger.slice(0,10);
+ const pct=Math.max(0,Math.min(1,bal/50)); /* ring fill is illustrative — caps visually at 50pts, balance number is the real value */
+ const arc=Math.round(pct*360);
+ let h='<div class="ebar"><h2>💰 Wallet — '+g.name+'</h2></div>';
+ h+='<div class="hz-ring" style="--arc:'+arc+'deg"><div class="hz-ring-inner"><div class="hz-ring-lab">points owed</div><div class="hz-ring-num">'+bal+'</div></div></div>';
+ h+='<div class="lvline" style="text-align:center;margin:6px 0 16px">🔥 '+streak+' day streak</div>';
+ h+='<div class="actions" style="justify-content:center;margin-bottom:16px">'
+  +'<button class="btn primary" data-act="uploadPhotoPrompt" data-gk="'+gk+'">📷 Upload today\'s sheet</button>'
+  +'<button class="btn" data-act="payout" data-gk="'+gk+'">💸 Paid out — reset to 0</button>'
+  +'</div>';
+ h+='<div class="sect">Recent</div>';
+ if(!hist.length)h+='<div class="wsempty">No points yet — upload a completed sheet to get started.</div>';
+ else hist.forEach(r=>{
+  const sign=r.delta>=0?'+':'';
+  h+='<div class="task"><span class="txt">'+sign+r.delta+' — '+(r.reason==='payout'?'Paid out':'Sheet graded')+'<small>'+new Date(r.created_at).toLocaleDateString()+'</small></span></div>';
+ });
+ return h;
+}
+async function renderWallet(gk){
+ const root=document.getElementById('content-'+gk);
+ root.innerHTML='<div class="wsempty">Loading wallet…</div>';
+ await refreshWalletCache(gk);
+ root.innerHTML=walletHTML(gk);
+}
+
 function panelHTML(gk,sk){const g=DATA[gk],s=g.subjects[sk];const li=LEVEL[gk][sk],lad=LEVELS[gk][sk];let h='';
  h+='<div class="ebar"><h2>'+s.icon+' '+s.label+' — '+g.name+'</h2><div class="actions">'
   +'<button class="btn" data-act="printTasks" data-gk="'+gk+'" data-sk="'+sk+'">🖨️ Task sheet</button>'
@@ -2295,9 +2346,12 @@ function wireTasks(root){const ts=root.querySelectorAll('.task'),bar=root.queryS
 /* ===== SUBTABS ===== */
 function buildGirl(gk){const g=DATA[gk],bar=document.getElementById('subtabs-'+gk),keys=Object.keys(g.subjects);
  bar.innerHTML='';
+ const wb=document.createElement('button');wb.className='subtab';wb.dataset.sk='wallet';wb.textContent='💰 Wallet';
+ wb.onclick=()=>{bar.querySelectorAll('.subtab').forEach(x=>{if(!x.classList.contains('soon'))x.style.cssText='';});wb.style.cssText='background:'+DATA[gk].subjects[keys[0]].accent+';border-color:'+DATA[gk].subjects[keys[0]].accent+';color:#fff;font-weight:700';renderWallet(gk);};
+ bar.appendChild(wb);
  keys.forEach(sk=>{const s=g.subjects[sk],b=document.createElement('button');b.className='subtab';b.dataset.sk=sk;b.textContent=s.icon+' '+s.label;b.onclick=()=>selSub(gk,sk,b);bar.appendChild(b);});
  SOON.forEach(t=>{const b=document.createElement('button');b.className='subtab soon';b.disabled=true;b.textContent=t+' · soon';bar.appendChild(b);});
- selSub(gk,keys[0],bar.querySelector('.subtab'));}
+ selSub(gk,keys[0],bar.querySelector('.subtab[data-sk="'+keys[0]+'"]'));}
 function selSub(gk,sk,btn){const bar=document.getElementById('subtabs-'+gk);
  bar.querySelectorAll('.subtab').forEach(x=>{if(!x.classList.contains('soon')){x.style.cssText='';}});
  const s=DATA[gk].subjects[sk];if(btn){btn.style.cssText='background:'+s.accent+';border-color:'+s.accent+';color:#0f1226;font-weight:700';}
