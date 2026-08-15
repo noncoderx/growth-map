@@ -67,7 +67,7 @@ Deno.serve(async (req) => {
     // sheet has moved out of pending_upload.
     sheetLoaded = true;
     const failAsPendingReview = async (body: Record<string, unknown>, status: number) => {
-      await sb.from("sheets").update({ status: "pending_review" }).eq("id", sheet_id);
+      await sb.from("sheets").update({ status: "pending_review" }).eq("id", sheet_id).neq("status", "approved");
       return new Response(JSON.stringify(body), { status, headers: corsHeaders() });
     };
 
@@ -98,7 +98,8 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         model: "claude-opus-5",
-        max_tokens: 1024,
+        max_tokens: 2048,
+        thinking: { type: "disabled" },
         output_config: {
           effort: "low",
           format: { type: "json_schema", schema: GRADE_SCHEMA },
@@ -125,7 +126,7 @@ Deno.serve(async (req) => {
 
     const claudeJson = await claudeResp.json();
     if (claudeJson.stop_reason === "refusal") {
-      await sb.from("sheets").update({ status: "pending_review" }).eq("id", sheet_id);
+      await sb.from("sheets").update({ status: "pending_review" }).eq("id", sheet_id).neq("status", "approved");
       return new Response(JSON.stringify({ ok: true, refused: true }), {
         status: 200,
         headers: corsHeaders(),
@@ -147,7 +148,11 @@ Deno.serve(async (req) => {
       return await failAsPendingReview({ error: "invalid verdict JSON from claude" }, 502);
     }
 
-    await sb.from("sheets").update({ ai_verdict: verdict, status: "pending_review" }).eq("id", sheet_id);
+    await sb
+      .from("sheets")
+      .update({ ai_verdict: verdict, status: "pending_review" })
+      .eq("id", sheet_id)
+      .neq("status", "approved");
 
     return new Response(JSON.stringify({ ok: true, verdict }), {
       status: 200,
@@ -157,7 +162,7 @@ Deno.serve(async (req) => {
     console.error(`grade-sheet: unhandled error sheet_id=${sheetId ?? "unknown"} error=${String(e)}`);
     if (sheetLoaded && sb && sheetId) {
       try {
-        await sb.from("sheets").update({ status: "pending_review" }).eq("id", sheetId);
+        await sb.from("sheets").update({ status: "pending_review" }).eq("id", sheetId).neq("status", "approved");
       } catch (updateErr) {
         console.error(`grade-sheet: failed to flip status after unhandled error: ${String(updateErr)}`);
       }
