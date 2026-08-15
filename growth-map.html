@@ -13,7 +13,7 @@
   .wrap{max-width:940px;margin:0 auto}
   header{text-align:center;margin-bottom:14px}
   h1{margin:0;font-size:26px}
-  .goal{color:var(--muted);font-size:12.5px;margin-top:6px;line-height:1.5}.goal b{color:#ffe9a8}
+  .goal{color:var(--muted);font-size:12.5px;margin-top:6px;line-height:1.5}.goal b{color:var(--hz-primary)}
   .tabs{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:18px 0}
   .tab{background:var(--card);border:1px solid var(--line);color:var(--muted);padding:9px 18px;border-radius:99px;font-size:13.5px;font-family:inherit;cursor:pointer;font-weight:600;box-shadow:0 2px 8px rgba(90,70,40,.05)}
   .tab:hover{color:var(--ink)}.tab.active{background:var(--hz-primary);color:var(--hz-primary-ink);border-color:var(--hz-primary)}
@@ -92,8 +92,8 @@
   .sheet .key .lab{color:#9a6a6a}
   .sheet .key div{font-size:11.5px;color:#5a6275;margin:2px 0}
   .sheet .note{font-size:11px;color:#7a8196;text-align:center;margin-top:16px;font-style:italic}
-  .bookzone{margin-top:18px;background:#161b35;border:1px solid var(--line);border-radius:14px;padding:14px}
-  .bookin{width:100%;background:#0f1226;border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:10px 12px;font-size:14px;font-family:inherit;margin:4px 0 10px}
+  .bookzone{margin-top:18px;background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:14px}
+  .bookin{width:100%;background:#fff;border:1.5px solid var(--line);color:var(--ink);border-radius:10px;padding:10px 12px;font-size:14px;font-family:inherit;margin:4px 0 10px}
   .bookact{display:flex;gap:8px;flex-wrap:wrap}
   .laddr{color:var(--muted);font-size:11.5px;margin-top:10px}
   .shelf{color:#cfe9d8;font-size:12px;margin-top:8px;background:#13321f;border:1px solid #2c5a3e;border-radius:8px;padding:8px 10px}
@@ -119,7 +119,7 @@
   </div>
   <div class="pane" id="pane-sarah"><div class="subtabs" id="subtabs-sarah"></div><div id="content-sarah"></div></div>
   <div class="pane" id="pane-mirayah"><div class="subtabs" id="subtabs-mirayah"></div><div id="content-mirayah"></div></div>
-  <footer>North star: become people <b style="color:#ffe9a8">top universities would be lucky to have</b> — strong academics, able to explain our thinking.</footer>
+  <footer>North star: become people <b style="color:var(--hz-primary)">top universities would be lucky to have</b> — strong academics, able to explain our thinking.</footer>
 </div></div>
 <div id="printRoot"></div>
 <div id="toast"></div>
@@ -2161,11 +2161,15 @@ function wsAnswerKeyForStorage(ws){
  return {keyLabel:ws.keyLabel||'Answer key — for grown-ups',ans:ws.ans||[]};
 }
 let CURWS=null, CURGK=null, CURSK=null, CURSHEETID=null;
+let WS_REQ_TOKEN=0; /* bumped on every makeWS call; lets a slow-resolving persistSheet() insert
+   detect it's been superseded by a newer "Make worksheet" press (e.g. quick reroll) and skip
+   writing CURSHEETID, instead of racing the newer call and pointing it at a stale/discarded sheet */
 function makeWS(gk,sk){const li=LEVEL[gk][sk];const ws=(sk==='english')?GENS[gk][sk](li,curBook(gk)):GENS[gk][sk](li);CURWS=ws;CURGK=gk;CURSK=sk;CURSHEETID=null;
+ const reqToken=++WS_REQ_TOKEN;
  const prev=document.getElementById('wsprev-'+gk+sk),empty=document.getElementById('wsempty-'+gk+sk);
  if(prev){prev.innerHTML=wsHTML(ws);prev.style.display='block';}if(empty)empty.style.display='none';
- if(isAcad(sk))persistSheet(gk,sk,li,ws);}
-async function persistSheet(gk,sk,li,ws){
+ if(isAcad(sk))persistSheet(gk,sk,li,ws,reqToken);}
+async function persistSheet(gk,sk,li,ws,reqToken){
  if(!sb)return;
  try{
   const mtotal=wsQuestionCount(ws)||1;
@@ -2175,7 +2179,7 @@ async function persistSheet(gk,sk,li,ws){
    answer_key:wsAnswerKeyForStorage(ws),
    mtotal,status:'pending_upload'
   }).select('id').single();
-  if(!error&&data)CURSHEETID=data.id;
+  if(!error&&data&&reqToken===WS_REQ_TOKEN)CURSHEETID=data.id; /* if a newer makeWS() fired while this insert was in flight, reqToken is now stale — drop the write instead of clobbering the current sheet's id */
  }catch(e){/* offline — upload/AI-grade simply won't be available for this sheet until it can retry */}
 }
 function printWS(){if(!CURWS){toast('Press “Make worksheet” first.');return;}document.getElementById('printRoot').innerHTML=wsHTML(CURWS);window.print();}
@@ -2195,11 +2199,44 @@ function uploadPhotoPrompt(gk,sk){
  input.onchange=()=>{if(input.files&&input.files[0])uploadSheetPhoto(CURSHEETID,input.files[0]);};
  input.click();
 }
+/* Phone camera captures routinely come in at 3-8MB — the Anthropic API rejects images over
+   ~5MB, which would otherwise fail every "primary use case" photo with a generic "AI grading
+   unavailable" toast. Downscale to a max dimension of 1600px and re-encode as JPEG before
+   upload; typical phone photos of a worksheet come out a few hundred KB to ~1-2MB after this,
+   plenty of resolution to read handwritten answers. Falls back to the original file if
+   downscaling fails for any reason (e.g. unsupported image type) so upload still proceeds. */
+function downscaleImageForUpload(file){
+ return new Promise((resolve)=>{
+  const fallback=()=>resolve({blob:file,isJpeg:false,origExt:(file.name.split('.').pop())||'jpg'});
+  try{
+   const url=URL.createObjectURL(file);
+   const img=new Image();
+   img.onload=()=>{
+    URL.revokeObjectURL(url);
+    const maxDim=1600;
+    let w=img.naturalWidth,h=img.naturalHeight;
+    if(!w||!h){fallback();return;}
+    if(w>maxDim||h>maxDim){
+     if(w>=h){h=Math.round(h*(maxDim/w));w=maxDim;}else{w=Math.round(w*(maxDim/h));h=maxDim;}
+    }
+    const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+    const ctx=canvas.getContext('2d');
+    if(!ctx){fallback();return;}
+    ctx.drawImage(img,0,0,w,h);
+    canvas.toBlob(blob=>{blob?resolve({blob,isJpeg:true}):fallback();},'image/jpeg',0.85);
+   };
+   img.onerror=fallback;
+   img.src=url;
+  }catch(e){fallback();}
+ });
+}
 async function uploadSheetPhoto(sheetId,file){
  toast('📤 Uploading…');
  try{
-  const path=sheetId+'-'+Date.now()+'.'+((file.name.split('.').pop())||'jpg');
-  const {error:upErr}=await sb.storage.from('sheet-photos').upload(path,file,{upsert:false});
+  const {blob:upBlob,isJpeg,origExt}=await downscaleImageForUpload(file);
+  const path=sheetId+'-'+Date.now()+'.'+(isJpeg?'jpg':(origExt||'jpg'));
+  const upOpts={upsert:false};if(isJpeg)upOpts.contentType='image/jpeg';
+  const {error:upErr}=await sb.storage.from('sheet-photos').upload(path,upBlob,upOpts);
   if(upErr){toast('Upload failed: '+upErr.message);return;}
   const {data:pub}=sb.storage.from('sheet-photos').getPublicUrl(path);
   await sb.from('sheets').update({photo_url:path}).eq('id',sheetId);
@@ -2427,14 +2464,19 @@ function buildGirl(gk){const g=DATA[gk],bar=document.getElementById('subtabs-'+g
  bar.appendChild(wb);
  keys.forEach(sk=>{const s=g.subjects[sk],b=document.createElement('button');b.className='subtab';b.dataset.sk=sk;b.textContent=s.icon+' '+s.label;b.onclick=()=>selSub(gk,sk,b);bar.appendChild(b);});
  SOON.forEach(t=>{const b=document.createElement('button');b.className='subtab soon';b.disabled=true;b.textContent=t+' · soon';bar.appendChild(b);});
- if(gk===KID_VIEW){
-  if(!ACTIVE_SUBTAB[gk]||ACTIVE_SUBTAB[gk]==='wallet'){
-   wb.click(); /* first-ever build for this kid, or rebuild while already on Wallet — (re)land on Wallet */
-  }else{
-   const activeBtn=bar.querySelector('.subtab[data-sk="'+ACTIVE_SUBTAB[gk]+'"]');
-   if(activeBtn)selSub(gk,ACTIVE_SUBTAB[gk],activeBtn);else wb.click(); /* rebuild while kid is on a subject tab — stay put, don't force back to Wallet */
-  }
- }else selSub(gk,keys[0],bar.querySelector('.subtab[data-sk="'+keys[0]+'"]'));}
+ /* Unified subtab-restore rule for both kid-view and parent-view: a rebuild (cloud sync,
+    realtime push, level-up, etc) must never bounce the viewer off whatever subtab they were
+    actually looking at. Only a true first-ever build for this kid (ACTIVE_SUBTAB[gk] still
+    null) gets a default landing tab — Wallet for the kid view, first subject for parent view. */
+ const defaultLand=()=>{if(gk===KID_VIEW)wb.click();else selSub(gk,keys[0],bar.querySelector('.subtab[data-sk="'+keys[0]+'"]'));};
+ if(!ACTIVE_SUBTAB[gk]){
+  defaultLand();
+ }else if(ACTIVE_SUBTAB[gk]==='wallet'){
+  wb.click(); /* rebuild while already on Wallet — (re)land on Wallet, for either view */
+ }else{
+  const activeBtn=bar.querySelector('.subtab[data-sk="'+ACTIVE_SUBTAB[gk]+'"]');
+  if(activeBtn)selSub(gk,ACTIVE_SUBTAB[gk],activeBtn);else defaultLand(); /* stay on the same subject tab; only fall back if it no longer exists */
+ }}
 function selSub(gk,sk,btn){const bar=document.getElementById('subtabs-'+gk);
  ACTIVE_SUBTAB[gk]=sk;
  bar.querySelectorAll('.subtab').forEach(x=>{if(!x.classList.contains('soon')){x.style.cssText='';}});
