@@ -2242,6 +2242,7 @@ async function prefillFromAiVerdict(sheetId,input,aiNote,mtotal){
  try{
   const {data,error}=await sb.from('sheets').select('ai_verdict').eq('id',sheetId).single();
   if(error||!data||!data.ai_verdict)return; /* no photo uploaded / not graded yet / offline — input stays at 0, exactly today's behavior */
+  if(sheetId!==CURSHEETID)return; /* modal moved to a different sheet while this request was in flight — drop the stale response */
   const v=data.ai_verdict;
   const est=Math.max(0,Math.min(mtotal,parseInt(v.estimated_correct,10)||0));
   input.value=est;
