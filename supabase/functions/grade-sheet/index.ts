@@ -25,8 +25,14 @@ function corsHeaders() {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders() });
 
+  // deno-lint-ignore no-explicit-any
+  let sb: any = null;
+  let sheetId: string | undefined;
+  let sheetLoaded = false;
+
   try {
     const { sheet_id } = await req.json();
+    sheetId = sheet_id;
     if (!sheet_id) {
       return new Response(JSON.stringify({ error: "sheet_id required" }), {
         status: 400,
@@ -34,7 +40,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const sb = createClient(SB_URL, SB_SERVICE_KEY);
+    sb = createClient(SB_URL, SB_SERVICE_KEY);
 
     const { data: sheet, error: fetchErr } = await sb
       .from("sheets")
@@ -54,13 +60,21 @@ Deno.serve(async (req) => {
       });
     }
 
+    // From here on the sheet row is confirmed to exist. Every failure past
+    // this point must still flip status to 'pending_review' so the sheet
+    // never gets stuck at 'pending_upload' — the mastery-check UI falls back
+    // to manual grading whenever ai_verdict is absent, but only once the
+    // sheet has moved out of pending_upload.
+    sheetLoaded = true;
+    const failAsPendingReview = async (body: Record<string, unknown>, status: number) => {
+      await sb.from("sheets").update({ status: "pending_review" }).eq("id", sheet_id);
+      return new Response(JSON.stringify(body), { status, headers: corsHeaders() });
+    };
+
     const { data: pub } = sb.storage.from("sheet-photos").getPublicUrl(sheet.photo_url);
     const photoResp = await fetch(pub.publicUrl);
     if (!photoResp.ok) {
-      return new Response(JSON.stringify({ error: "could not fetch photo" }), {
-        status: 502,
-        headers: corsHeaders(),
-      });
+      return await failAsPendingReview({ error: "could not fetch photo" }, 502);
     }
     const photoBuf = await photoResp.arrayBuffer();
     let binary = "";
@@ -102,11 +116,11 @@ Deno.serve(async (req) => {
     });
 
     if (!claudeResp.ok) {
-      await sb.from("sheets").update({ status: "pending_review" }).eq("id", sheet_id);
-      return new Response(JSON.stringify({ error: "claude request failed" }), {
-        status: 502,
-        headers: corsHeaders(),
-      });
+      const bodyText = await claudeResp.text();
+      console.error(
+        `grade-sheet: claude request failed sheet_id=${sheet_id} status=${claudeResp.status} body=${bodyText}`,
+      );
+      return await failAsPendingReview({ error: "claude request failed" }, 502);
     }
 
     const claudeJson = await claudeResp.json();
@@ -120,13 +134,18 @@ Deno.serve(async (req) => {
 
     const textBlock = (claudeJson.content || []).find((b: { type: string }) => b.type === "text");
     if (!textBlock) {
-      await sb.from("sheets").update({ status: "pending_review" }).eq("id", sheet_id);
-      return new Response(JSON.stringify({ error: "no text block in response" }), {
-        status: 502,
-        headers: corsHeaders(),
-      });
+      return await failAsPendingReview({ error: "no text block in response" }, 502);
     }
-    const verdict = JSON.parse(textBlock.text);
+
+    let verdict;
+    try {
+      verdict = JSON.parse(textBlock.text);
+    } catch (parseErr) {
+      console.error(
+        `grade-sheet: failed to parse claude verdict JSON sheet_id=${sheet_id} error=${String(parseErr)} raw=${textBlock.text}`,
+      );
+      return await failAsPendingReview({ error: "invalid verdict JSON from claude" }, 502);
+    }
 
     await sb.from("sheets").update({ ai_verdict: verdict, status: "pending_review" }).eq("id", sheet_id);
 
@@ -135,6 +154,14 @@ Deno.serve(async (req) => {
       headers: corsHeaders(),
     });
   } catch (e) {
+    console.error(`grade-sheet: unhandled error sheet_id=${sheetId ?? "unknown"} error=${String(e)}`);
+    if (sheetLoaded && sb && sheetId) {
+      try {
+        await sb.from("sheets").update({ status: "pending_review" }).eq("id", sheetId);
+      } catch (updateErr) {
+        console.error(`grade-sheet: failed to flip status after unhandled error: ${String(updateErr)}`);
+      }
+    }
     return new Response(JSON.stringify({ error: String(e) }), {
       status: 500,
       headers: corsHeaders(),
