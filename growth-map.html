@@ -127,6 +127,7 @@
   <div class="masteryCard">
     <h3>📋 Mastery check</h3>
     <div class="masteryQ">Check their answers against the answer key. How many did they get right out of <b id="mTotal">0</b>?</div>
+    <div class="masteryAiNote" id="mAiNote" style="display:none"></div>
     <div class="masteryRow">
       <button class="btn mStep" data-d="-1">−</button>
       <input id="mCorrect" type="number" min="0" value="0" inputmode="numeric">
@@ -2232,8 +2233,21 @@ function openMasteryCheck(gk,sk){
  document.getElementById('mTotal').textContent=MTOTAL;
  const need=Math.ceil(MTOTAL*MASTERY_PASS);
  document.getElementById('mNeed').textContent='Need '+need+'/'+MTOTAL+' ('+Math.round(MASTERY_PASS*100)+'%+) to level up. Below that → fresh practice sheet at the same level.';
- const input=document.getElementById('mCorrect');input.max=MTOTAL;input.value=0;
+ const input=document.getElementById('mCorrect'),aiNote=document.getElementById('mAiNote');
+ input.max=MTOTAL;input.value=0;aiNote.style.display='none';
  document.getElementById('masteryOverlay').style.display='flex';
+ if(CURSHEETID)prefillFromAiVerdict(CURSHEETID,input,aiNote,MTOTAL);
+}
+async function prefillFromAiVerdict(sheetId,input,aiNote,mtotal){
+ try{
+  const {data,error}=await sb.from('sheets').select('ai_verdict').eq('id',sheetId).single();
+  if(error||!data||!data.ai_verdict)return; /* no photo uploaded / not graded yet / offline — input stays at 0, exactly today's behavior */
+  const v=data.ai_verdict;
+  const est=Math.max(0,Math.min(mtotal,parseInt(v.estimated_correct,10)||0));
+  input.value=est;
+  aiNote.textContent='🤖 AI read: '+est+'/'+mtotal+(v.note?' — '+v.note:'')+'. Adjust the number if needed, then confirm.';
+  aiNote.style.display='block';
+ }catch(e){/* offline — input stays at 0 */}
 }
 function closeMasteryCheck(){document.getElementById('masteryOverlay').style.display='none';MGK=null;MSK=null;}
 function confirmMastery(){
