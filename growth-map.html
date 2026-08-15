@@ -2143,10 +2143,30 @@ function wsHTML(ws){let h='<div class="sheet"><h1>'+ws.title+'</h1><div class="s
  h+='<div class="note">'+(ws.note||'Made fresh by the Growth Map — every sheet a step up. Understanding first, speed later.')+'</div></div>';
  return h;}
 
-let CURWS=null, CURGK=null, CURSK=null;
-function makeWS(gk,sk){const li=LEVEL[gk][sk];const ws=(sk==='english')?GENS[gk][sk](li,curBook(gk)):GENS[gk][sk](li);CURWS=ws;CURGK=gk;CURSK=sk;
+function wsQuestionsForStorage(ws){
+ return ws.blocks.map(b=>({h:b.h,items:b.items||[]}));
+}
+function wsAnswerKeyForStorage(ws){
+ return {keyLabel:ws.keyLabel||'Answer key — for grown-ups',ans:ws.ans||[]};
+}
+let CURWS=null, CURGK=null, CURSK=null, CURSHEETID=null;
+function makeWS(gk,sk){const li=LEVEL[gk][sk];const ws=(sk==='english')?GENS[gk][sk](li,curBook(gk)):GENS[gk][sk](li);CURWS=ws;CURGK=gk;CURSK=sk;CURSHEETID=null;
  const prev=document.getElementById('wsprev-'+gk+sk),empty=document.getElementById('wsempty-'+gk+sk);
- if(prev){prev.innerHTML=wsHTML(ws);prev.style.display='block';}if(empty)empty.style.display='none';}
+ if(prev){prev.innerHTML=wsHTML(ws);prev.style.display='block';}if(empty)empty.style.display='none';
+ if(isAcad(sk))persistSheet(gk,sk,li,ws);}
+async function persistSheet(gk,sk,li,ws){
+ if(!sb)return;
+ try{
+  const mtotal=wsQuestionCount(ws)||1;
+  const {data,error}=await sb.from('sheets').insert({
+   kid:gk,subject:sk,rung:li,
+   questions:wsQuestionsForStorage(ws),
+   answer_key:wsAnswerKeyForStorage(ws),
+   mtotal,status:'pending_upload'
+  }).select('id').single();
+  if(!error&&data)CURSHEETID=data.id;
+ }catch(e){/* offline — upload/AI-grade simply won't be available for this sheet until it can retry */}
+}
 function printWS(){if(!CURWS){toast('Press “Make worksheet” first.');return;}document.getElementById('printRoot').innerHTML=wsHTML(CURWS);window.print();}
 function downloadWS(){if(!CURWS){toast('Press “Make worksheet” first.');return;}
  const css=document.querySelector('style').textContent;
