@@ -1,5 +1,6 @@
 .DS_Store
 sources/.DS_Store
+.superpowers/
 # unauthorized/pirated copies — never committed, per project policy (see plan's Global Constraints)
 sources/maths/Art of Problem Solving_*
 sources/maths/Assessment Test for Singapore*
