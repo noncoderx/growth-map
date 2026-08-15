@@ -92,6 +92,7 @@
   #printRoot{display:none}
   @media print{body{background:#fff;padding:0}.app{display:none!important}#printRoot{display:block!important}}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 </head>
 <body>
 <div class="app"><div class="wrap">
@@ -136,8 +137,14 @@
 /* ============================================================
    OUR GROWTH MAP — v9  (the "step game")
    Every ✓ Done = an intelligent level-up, never a repeat.
-   Progress is saved in the page URL (#state), so a reload
-   keeps your place. (No localStorage — by design.)
+   Progress autosaves to localStorage on this device (survives closing
+   the tab/browser, reopening the plain link, anything) AND to the page
+   URL (#state) so a specific state can still be shared/handed off via
+   link. A hash present in the URL wins on load (deliberate override for
+   sharing); with no hash, localStorage is the fallback. It also syncs
+   to Supabase so any device opening the same link converges to the
+   same real progress — see the CLOUD SYNC block near the end of this
+   script.
    ============================================================ */
 
 /* ===== helpers ===== */
@@ -602,27 +609,32 @@ const LEVEL={
 };
 const BOOK ={sarah:{idx:0,custom:null,done:[]}, mirayah:{idx:0,custom:null,done:[]}};
 
-/* ===== persistence via URL hash (survives reload, no localStorage) =====
-   X = how many synthetic "Independent Study" rungs doDoneLevelUp has pushed
-   onto each ladder, past BASE_LADDER_LEN. Without this, only the numeric
-   LEVEL index was saved — on reload LEVELS[g][k] gets rebuilt fresh from the
-   hand-authored source (short again), so load()'s own clamp silently snapped
-   any level past the hand-authored ceiling back down, discarding all
-   ladder-extension progress every time the page reloaded. Saving the push
-   count lets load() replay intensifyRung the same number of times BEFORE
-   computing the clamp, so the ladder is the right length again first. */
-function save(){
+const LS_KEY='growthMapState_v1';
+function currentStateSnapshot(){
+ const ext={};
+ for(const g of ['sarah','mirayah']){ext[g]={};for(const k of Object.keys(LEVELS[g]))ext[g][k]=LEVELS[g][k].length-BASE_LADDER_LEN[g][k];}
+ return {L:LEVEL,X:ext,B:{sarah:{i:BOOK.sarah.idx,d:BOOK.sarah.done,c:BOOK.sarah.custom},mirayah:{i:BOOK.mirayah.idx,d:BOOK.mirayah.done,c:BOOK.mirayah.custom}}};
+}
+function saveLocal(){
  try{
-  const ext={};
-  for(const g of ['sarah','mirayah']){ext[g]={};for(const k of Object.keys(LEVELS[g]))ext[g][k]=LEVELS[g][k].length-BASE_LADDER_LEN[g][k];}
-  const s={L:LEVEL,X:ext,B:{sarah:{i:BOOK.sarah.idx,d:BOOK.sarah.done,c:BOOK.sarah.custom},mirayah:{i:BOOK.mirayah.idx,d:BOOK.mirayah.done,c:BOOK.mirayah.custom}}};
-  history.replaceState(null,'','#'+encodeURIComponent(JSON.stringify(s)));
+  const json=JSON.stringify(currentStateSnapshot());
+  history.replaceState(null,'','#'+encodeURIComponent(json));
+  try{localStorage.setItem(LS_KEY,json);}catch(e){/* private-browsing/storage-blocked: hash still works this tab */}
  }catch(e){/* if hash write is blocked, stay in-memory */}
+}
+function save(){
+ saveLocal();
+ if(typeof pushCloud==='function')pushCloud(); // fire-and-forget; local save above already succeeded regardless
 }
 function load(){
  try{
-  if(!location.hash||location.hash.length<2)return;
-  const s=JSON.parse(decodeURIComponent(location.hash.slice(1)));
+  // A hash in the URL is a deliberate share/handoff — it wins. Otherwise fall back
+  // to this device's own autosave, so a bare/fresh link still resumes real progress.
+  let json=null;
+  if(location.hash&&location.hash.length>1) json=decodeURIComponent(location.hash.slice(1));
+  else try{json=localStorage.getItem(LS_KEY);}catch(e){/* storage blocked */}
+  if(!json)return;
+  const s=JSON.parse(json);
   if(s.X){for(const g of ['sarah','mirayah'])for(const k of Object.keys(LEVELS[g])){
     const n=s.X[g] && s.X[g][k];
     if(Number.isInteger(n)&&n>0){
@@ -2333,11 +2345,99 @@ document.querySelectorAll('.mStep').forEach(b=>b.addEventListener('click',()=>{
 }));
 document.getElementById('masteryOverlay').addEventListener('click',e=>{if(e.target.id==='masteryOverlay')closeMasteryCheck();});
 
+/* ===== CLOUD SYNC (Supabase) — same real progress on any device, no login =====
+   Open by design: public anon key, RLS lets anyone read/write this one table,
+   no per-user auth. This is a private family tool shared by a plain link, not
+   a public product — that tradeoff was a deliberate, explicit decision, not
+   an oversight. Merge on every pull is monotonic: max() per LEVEL/X counter
+   (never regress real progress if the two devices diverged), union of
+   BOOK.done (never lose a finished book), max of BOOK.idx, BOOK.custom kept
+   from whichever side actually has a non-empty value. */
+const SB_URL='https://fuajabuexuqjoqndbeed.supabase.co';
+const SB_KEY='sb_publishable_GvCjPmsNOd56vxVrMCeufw_KtIze4O9';
+const SB_ROW_KEY='family';
+const sb=window.supabase.createClient(SB_URL,SB_KEY);
+
+function mergeState(local,remote){
+ if(!remote)return local;
+ if(!local)return remote;
+ const out={L:{},X:{},B:{}};
+ for(const g of ['sarah','mirayah']){
+  out.L[g]={};for(const k of Object.keys(local.L[g]||{}))out.L[g][k]=Math.max(local.L[g]?.[k]??0,remote.L?.[g]?.[k]??0);
+  out.X[g]={};const xk=new Set([...Object.keys(local.X?.[g]||{}),...Object.keys(remote.X?.[g]||{})]);
+  for(const k of xk)out.X[g][k]=Math.max(local.X?.[g]?.[k]??0,remote.X?.[g]?.[k]??0);
+  const li=local.B?.[g]||{i:0,d:[],c:null},ri=remote.B?.[g]||{i:0,d:[],c:null};
+  out.B[g]={
+   i:Math.max(li.i||0,ri.i||0),
+   d:[...new Set([...(li.d||[]),...(ri.d||[])])],
+   c:(li.c&&li.c.trim())?li.c:((ri.c&&ri.c.trim())?ri.c:null)
+  };
+ }
+ return out;
+}
+
+function applyState(s){
+ if(s.X){for(const g of ['sarah','mirayah'])for(const k of Object.keys(LEVELS[g])){
+   const want=s.X[g]&&s.X[g][k],have=LEVELS[g][k].length-BASE_LADDER_LEN[g][k];
+   if(Number.isInteger(want)&&want>have){
+    const lad=LEVELS[g][k],base=BASE_LADDER_LEN[g][k],cap=Math.min(want,1000);
+    for(let t=have+1;t<=cap;t++)lad.push(intensifyRung(lad[base-1],t));
+   }
+ }}
+ if(s.L){for(const g of ['sarah','mirayah'])for(const k of Object.keys(LEVELS[g])){
+   const v=s.L[g]&&s.L[g][k];const max=LEVELS[g][k].length-1;
+   if(Number.isInteger(v))LEVEL[g][k]=Math.max(0,Math.min(max,v));
+ }}
+ if(s.B){for(const g of ['sarah','mirayah']){
+   if(s.B[g]){ if(Number.isInteger(s.B[g].i))BOOK[g].idx=Math.max(BOOK[g].idx,s.B[g].i);
+               if(Array.isArray(s.B[g].d))BOOK[g].done=[...new Set([...(BOOK[g].done||[]),...s.B[g].d])];
+               if(typeof s.B[g].c==='string'&&s.B[g].c.trim())BOOK[g].custom=s.B[g].c; }
+ }}
+}
+
+async function writeCloudRaw(stateObj){
+ try{await sb.from('state').upsert({key:SB_ROW_KEY,data:stateObj,updated_at:new Date().toISOString()});}
+ catch(e){/* offline or blocked — local save already happened, not fatal */}
+}
+
+async function pushCloud(){
+ // Merge-before-write, never a blind overwrite — this exact bug was found and
+ // fixed during the 2026-07-22 build: device A pushes real advances, device B
+ // (never refreshed, holding a stale local snapshot) later saves anything and
+ // its naive push silently erases A's progress. Pulling + merging first means
+ // a stale push can only ever advance the cloud (mergeState is monotonic),
+ // never roll it back.
+ try{
+  const {data}=await sb.from('state').select('data').eq('key',SB_ROW_KEY).maybeSingle();
+  const merged=mergeState(currentStateSnapshot(),data?data.data:null);
+  applyState(merged);
+  saveLocal();
+  await writeCloudRaw(merged);
+ }catch(e){/* offline or blocked — local save already happened, not fatal */}
+}
+
+async function pullAndMergeCloud(silent){
+ try{
+  const {data,error}=await sb.from('state').select('data').eq('key',SB_ROW_KEY).maybeSingle();
+  if(error||!data)return;
+  const merged=mergeState(currentStateSnapshot(),data.data);
+  applyState(merged);
+  saveLocal();
+  if(!silent)await writeCloudRaw(merged);
+  buildOverview();buildGirl('sarah');buildGirl('mirayah');
+ }catch(e){/* offline — local state stands, will retry on next load/change */}
+}
+
+sb.channel('state-changes')
+ .on('postgres_changes',{event:'*',schema:'public',table:'state',filter:`key=eq.${SB_ROW_KEY}`},()=>{pullAndMergeCloud(true);})
+ .subscribe();
+
 /* ===== INIT ===== */
 load();
 buildOverview();
 buildGirl('sarah');
 buildGirl('mirayah');
+pullAndMergeCloud(); // async — page renders instantly from local/hash first, upgrades to merged cross-device state moments later
 </script>
 </body>
 </html>
