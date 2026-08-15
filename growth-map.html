@@ -2391,13 +2391,17 @@ function walletHTML(gk){
  h+='<div class="lvline" style="text-align:center;margin:6px 0 16px">🔥 '+streak+' day streak</div>';
  if(!KID_VIEW)h+='<div class="actions" style="justify-content:center;margin-bottom:16px">'
   +'<button class="btn primary" data-act="uploadPhotoPrompt" data-gk="'+gk+'">📷 Upload today\'s sheet</button>'
+  +'<button class="btn" data-act="addPointsPrompt" data-gk="'+gk+'">⭐ Add points</button>'
   +'<button class="btn" data-act="payout" data-gk="'+gk+'">💸 Paid out — reset to 0</button>'
   +'</div>';
  h+='<div class="sect">Recent</div>';
  if(!hist.length)h+='<div class="wsempty">No points yet — upload a completed sheet to get started.</div>';
  else hist.forEach(r=>{
   const sign=r.delta>=0?'+':'';
-  h+='<div class="task"><span class="txt">'+sign+r.delta+' — '+(r.reason==='payout'?'Paid out':'Sheet graded')+'<small>'+new Date(r.created_at).toLocaleDateString()+'</small></span></div>';
+  const label=r.reason==='payout'?'Paid out':r.reason==='manual'?'Added by hand':'Sheet graded';
+  h+='<div class="task" style="justify-content:space-between"><span class="txt">'+sign+r.delta+' — '+label+'<small>'+new Date(r.created_at).toLocaleDateString()+'</small></span>'
+   +(KID_VIEW?'':'<button class="btn" data-act="deleteHistoryEntry" data-gk="'+gk+'" data-id="'+r.id+'" title="Delete this entry" style="padding:2px 10px;font-size:12px;flex:0 0 auto">🗑️</button>')
+   +'</div>';
  });
  return h;
 }
@@ -2421,6 +2425,32 @@ async function payout(gk){
   const active=document.querySelector('#subtabs-'+gk+' .subtab[data-sk="wallet"]');
   if(active)renderWallet(gk);
  }catch(e){toast('Payout couldn\'t be saved — check your connection.');}
+}
+
+async function addPointsPrompt(gk){
+ const raw=prompt('Add how many points to '+DATA[gk].name+'\'s balance? (e.g. a chore, good behaviour — type a positive number, or negative to correct a mistake)');
+ if(raw===null)return; /* cancelled */
+ const n=parseInt(raw,10);
+ if(!Number.isInteger(n)||n===0){toast('Enter a non-zero whole number.');return;}
+ try{
+  await sb.from('points_ledger').insert({kid:gk,delta:n,reason:'manual'});
+  await refreshWalletCache(gk);
+  toast((n>0?'⭐ +':'')+n+' points added.');
+  const active=document.querySelector('#subtabs-'+gk+' .subtab[data-sk="wallet"]');
+  if(active)renderWallet(gk);
+ }catch(e){toast('Couldn\'t save — check your connection.');}
+}
+
+async function deleteHistoryEntry(gk,id){
+ if(!confirm('Delete this entry? This can\'t be undone.'))return;
+ try{
+  const {data}=await sb.from('points_ledger').delete().eq('id',id).select();
+  if(!data||!data.length){toast('Couldn\'t delete — try again.');return;}
+  await refreshWalletCache(gk);
+  toast('Entry deleted.');
+  const active=document.querySelector('#subtabs-'+gk+' .subtab[data-sk="wallet"]');
+  if(active)renderWallet(gk);
+ }catch(e){toast('Couldn\'t delete — check your connection.');}
 }
 
 function panelHTML(gk,sk){const g=DATA[gk],s=g.subjects[sk];const li=LEVEL[gk][sk],lad=LEVELS[gk][sk];let h='';
@@ -2482,7 +2512,16 @@ function selSub(gk,sk,btn){const bar=document.getElementById('subtabs-'+gk);
  bar.querySelectorAll('.subtab').forEach(x=>{if(!x.classList.contains('soon')){x.style.cssText='';}});
  const s=DATA[gk].subjects[sk];if(btn){btn.style.cssText='background:'+s.accent+';border-color:'+s.accent+';color:#0f1226;font-weight:700';}
  renderSub(gk,sk);}
-function renderSub(gk,sk){const root=document.getElementById('content-'+gk);root.innerHTML=panelHTML(gk,sk);wireTasks(root);}
+function renderSub(gk,sk){const root=document.getElementById('content-'+gk);root.innerHTML=panelHTML(gk,sk);wireTasks(root);
+ /* restore an already-made worksheet when navigating back to this exact subject —
+    CURWS/CURGK/CURSK/CURSHEETID are page-lifetime singletons (not per-subject), so a sheet
+    generated here survives switching tabs/subjects and back; panelHTML always starts blank,
+    so re-paint it here instead of losing it. */
+ if(CURGK===gk&&CURSK===sk&&CURWS){
+  const prev=document.getElementById('wsprev-'+gk+sk),empty=document.getElementById('wsempty-'+gk+sk);
+  if(prev){prev.innerHTML=wsHTML(CURWS);prev.style.display='block';}if(empty)empty.style.display='none';
+ }
+}
 
 /* ===== OVERVIEW (driven by current levels) ===== */
 function starStr(frac){const full=Math.max(0,Math.min(5,Math.round(frac*5)));return '★★★★★'.slice(0,full)+'☆☆☆☆☆'.slice(0,5-full);}
@@ -2513,7 +2552,7 @@ function printTasks(gk,sk){document.getElementById('printRoot').innerHTML=tasksS
 /* ===== DELEGATED ACTIONS (no inline onclick/oninput — CSP-safe) ===== */
 document.addEventListener('click', e=>{
  const t=e.target.closest('[data-act]'); if(!t) return;
- const gk=t.dataset.gk, sk=t.dataset.sk, act=t.dataset.act;
+ const gk=t.dataset.gk, sk=t.dataset.sk, act=t.dataset.act, id=t.dataset.id;
  if(act==='makeWS') makeWS(gk,sk);
  else if(act==='doneLevelUp') doneLevelUp(gk,sk);
  else if(act==='stepDown') stepDown(gk,sk);
@@ -2525,6 +2564,8 @@ document.addEventListener('click', e=>{
  else if(act==='goSubject') goToSubject(gk,sk);
  else if(act==='uploadPhotoPrompt') uploadPhotoPrompt(gk,sk);
  else if(act==='payout') payout(gk);
+ else if(act==='addPointsPrompt') addPointsPrompt(gk);
+ else if(act==='deleteHistoryEntry') deleteHistoryEntry(gk,id);
 });
 document.addEventListener('input', e=>{
  const t=e.target.closest('[data-bookinput]'); if(!t) return;
