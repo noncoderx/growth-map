@@ -2367,6 +2367,20 @@ async function renderWallet(gk){
  root.innerHTML=walletHTML(gk);
 }
 
+async function payout(gk){
+ await refreshWalletCache(gk);
+ const bal=getBalance(gk);
+ if(bal<=0){toast('Nothing owed right now.');return;}
+ if(!confirm('Mark '+DATA[gk].name+'\'s '+bal+' points as paid out? This resets the balance to 0 (history stays, for the record).'))return;
+ try{
+  await sb.from('points_ledger').insert({kid:gk,delta:-bal,reason:'payout'});
+  await refreshWalletCache(gk);
+  toast('💸 Paid out — balance reset to 0.');
+  const active=document.querySelector('#subtabs-'+gk+' .subtab[data-sk="wallet"]');
+  if(active)renderWallet(gk);
+ }catch(e){toast('Payout couldn\'t be saved — check your connection.');}
+}
+
 function panelHTML(gk,sk){const g=DATA[gk],s=g.subjects[sk];const li=LEVEL[gk][sk],lad=LEVELS[gk][sk];let h='';
  h+='<div class="ebar"><h2>'+s.icon+' '+s.label+' — '+g.name+'</h2><div class="actions">'
   +'<button class="btn" data-act="printTasks" data-gk="'+gk+'" data-sk="'+sk+'">🖨️ Task sheet</button>'
