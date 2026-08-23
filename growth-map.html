@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Our Growth Map</title>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
 <style>
   :root{--card:#ffffff;--card2:#fbf6ea;--ink:#2e2a3d;--muted:#8a7a55;--line:#f0e9da;
     --learn:#5b4a8a;--english:#ff8da3;--maths:#5b4a8a;--swim:#39c5e8;--music:#c98bff;--ride:#ffb069;--give:#5fe0b0;--star:#ffb069;
@@ -2232,28 +2234,59 @@ function wsAnswerKeyForStorage(ws){
  return {keyLabel:ws.keyLabel||'Answer key — for grown-ups',ans:ws.ans||[]};
 }
 let CURWS=null, CURGK=null, CURSK=null, CURSHEETID=null;
-const WS_CACHE={}; /* per kid+subject, so switching Sarah↔Mirayah (or subjects) does not wipe a sheet that was already made */
+const WS_CACHE={}; /* per kid+subject — survives switching Sarah↔Mirayah, other subjects, cloud rebuilds, and reloads */
+const WS_LS_KEY='growthMapSheets_v1';
+let WS_TOKEN=0;
 function wsCacheKey(gk,sk){return gk+'|'+sk;}
+function cloneWS(ws){try{return JSON.parse(JSON.stringify(ws));}catch(e){return ws;}}
+function persistWSCache(){
+ try{
+  const out={};
+  for(const k of Object.keys(WS_CACHE)){
+   const hit=WS_CACHE[k];
+   if(!hit)continue;
+   out[k]={ws:hit.ws||null,sheetId:hit.sheetId||null,html:hit.html||'',token:hit.token||0};
+  }
+  localStorage.setItem(WS_LS_KEY,JSON.stringify(out));
+ }catch(e){/* quota / private mode — in-memory cache still works this tab */}
+}
+function loadWSCache(){
+ try{
+  const raw=localStorage.getItem(WS_LS_KEY);
+  if(!raw)return;
+  const o=JSON.parse(raw);
+  for(const k of Object.keys(o||{})){
+   const hit=o[k];
+   if(!hit)continue;
+   WS_CACHE[k]={ws:hit.ws||null,sheetId:hit.sheetId||null,html:hit.html||'',token:hit.token||0};
+  }
+ }catch(e){/* ignore a malformed cache */}
+}
 function rememberWS(gk,sk,ws,sheetId){
- CURWS=ws;CURGK=gk;CURSK=sk;
+ const copy=cloneWS(ws);
+ const html=wsHTML(copy);
+ const token=++WS_TOKEN;
+ CURWS=copy;CURGK=gk;CURSK=sk;
  CURSHEETID=(sheetId===undefined)?null:sheetId;
- WS_CACHE[wsCacheKey(gk,sk)]={ws:ws,sheetId:CURSHEETID};
+ WS_CACHE[wsCacheKey(gk,sk)]={ws:copy,sheetId:CURSHEETID,html:html,token:token};
+ persistWSCache();
+ return token;
 }
 function paintCachedWS(gk,sk){
  const hit=WS_CACHE[wsCacheKey(gk,sk)];
- if(!hit||!hit.ws)return false;
- CURWS=hit.ws;CURGK=gk;CURSK=sk;CURSHEETID=hit.sheetId||null;
+ if(!hit||(!hit.ws&&!hit.html))return false;
+ if(hit.ws){CURWS=hit.ws;CURGK=gk;CURSK=sk;CURSHEETID=hit.sheetId||null;}
  const prev=document.getElementById('wsprev-'+gk+sk),empty=document.getElementById('wsempty-'+gk+sk);
- if(prev){prev.innerHTML=wsHTML(hit.ws);prev.style.display='block';}
+ if(prev){prev.innerHTML=hit.html||wsHTML(hit.ws);prev.style.display='block';}
  if(empty)empty.style.display='none';
  return true;
 }
 function makeWS(gk,sk){const li=LEVEL[gk][sk];const ws=(sk==='english')?GENS[gk][sk](li,curBook(gk)):GENS[gk][sk](li);
- rememberWS(gk,sk,ws,null);
+ const token=rememberWS(gk,sk,ws,null);
  const prev=document.getElementById('wsprev-'+gk+sk),empty=document.getElementById('wsempty-'+gk+sk);
- if(prev){prev.innerHTML=wsHTML(ws);prev.style.display='block';}if(empty)empty.style.display='none';
- if(isAcad(sk))persistSheet(gk,sk,li,ws);}
-async function persistSheet(gk,sk,li,ws){
+ if(prev){prev.innerHTML=WS_CACHE[wsCacheKey(gk,sk)].html;prev.style.display='block';}if(empty)empty.style.display='none';
+ if(isAcad(sk))persistSheet(gk,sk,li,ws,token);}
+async function persistSheet(gk,sk,li,ws,token){
  if(!sb)return;
  try{
   const mtotal=wsQuestionCount(ws)||1;
@@ -2265,8 +2298,8 @@ async function persistSheet(gk,sk,li,ws){
   }).select('id').single();
   if(error||!data)return;
   const hit=WS_CACHE[wsCacheKey(gk,sk)];
-  if(hit&&hit.ws===ws)hit.sheetId=data.id; /* ignore if this subject was rerolled while the insert was in flight */
-  if(CURGK===gk&&CURSK===sk&&CURWS===ws)CURSHEETID=data.id;
+  if(hit&&hit.token===token){hit.sheetId=data.id;persistWSCache();}
+  if(CURGK===gk&&CURSK===sk&&hit&&hit.token===token)CURSHEETID=data.id;
  }catch(e){/* offline — upload/AI-grade simply won't be available for this sheet until it can retry */}
 }
 function printWS(){if(!CURWS){toast('Press “Make worksheet” first.');return;}document.getElementById('printRoot').innerHTML=wsHTML(CURWS);window.print();}
@@ -2864,6 +2897,7 @@ if(sb){
 
 /* ===== INIT ===== */
 load();
+loadWSCache(); /* must run before the first buildGirl so a saved sheet is painted on landing */
 buildOverview();
 buildGirl('sarah');
 buildGirl('mirayah');
