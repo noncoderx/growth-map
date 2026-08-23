@@ -78,6 +78,32 @@
   .hz-ring-inner{position:relative;z-index:1;text-align:center}
   .hz-ring-lab{font-size:10.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted)}
   .hz-ring-num{font-size:34px;font-weight:800;color:var(--hz-primary)}
+  .allot-wrap{margin:4px 0 18px}
+  .allot-intro{font-size:12.5px;color:var(--muted);text-align:center;margin:0 0 12px;line-height:1.45}
+  .allot-intro b{color:var(--hz-primary)}
+  .allot-bar{display:flex;height:14px;border-radius:99px;overflow:hidden;background:var(--hz-track);border:1px solid var(--line);margin:0 0 12px}
+  .allot-bar>i{display:block;height:100%;transition:width .25s}
+  .allot-bar .seg-tv{background:#39c5e8}
+  .allot-bar .seg-shop{background:var(--hz-accent)}
+  .allot-bar .seg-left{background:#d8c8ff}
+  .allot-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  .allot-card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:14px 12px 16px;text-align:center;box-shadow:0 8px 20px rgba(90,70,40,.06)}
+  .allot-card.tv{background:linear-gradient(180deg,#f4fcff,#fff)}
+  .allot-card.shop{background:linear-gradient(180deg,#fff8ee,#fff)}
+  .allot-ico{font-size:22px;line-height:1}
+  .allot-name{font-weight:800;font-size:14px;margin:6px 0 2px}
+  .allot-rate{font-size:11px;color:var(--muted);margin-bottom:8px}
+  .allot-rate b{color:var(--hz-primary)}
+  .allot-row{display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:8px}
+  .allot-row input{width:72px;text-align:center;font-size:22px;font-weight:800;background:var(--hz-bg1);border:1.5px solid var(--line);border-radius:12px;color:var(--ink);padding:6px 4px;font-family:inherit;appearance:textfield;-moz-appearance:textfield}
+  .allot-row input::-webkit-outer-spin-button,.allot-row input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  .allot-row input:focus{outline:none;border-color:var(--hz-primary)}
+  .allot-pay{font-size:28px;font-weight:800;color:var(--hz-primary);line-height:1.1;margin-top:4px}
+  .allot-pay small{display:block;font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.4px;margin-top:2px}
+  .allot-card.left .allot-pay{color:#6b5aa0}
+  .allot-card.empty .allot-pay{opacity:.45}
+  @media (max-width:640px){.allot-grid{grid-template-columns:1fr}}
+  @media (prefers-reduced-motion:reduce){.allot-bar>i{transition:none}}
   /* paper sheet (shared by preview + print + download) */
   .sheet{font-family:Georgia,'Times New Roman',serif;color:#1c2230;max-width:820px;margin:0 auto;padding:26px}
   .sheet h1{font-size:22px;text-align:center;margin:0}
@@ -622,12 +648,33 @@ const LEVEL={
  mirayah:{maths:0, english:0, science:0, swimming:5, music:0, riding:2, madhurim:1}
 };
 const BOOK ={sarah:{idx:0,custom:null,done:[]}, mirayah:{idx:0,custom:null,done:[]}};
+const ALLOT={sarah:{tv:0,shop:0,t:0}, mirayah:{tv:0,shop:0,t:0}};
+const TV_PER_PT=2;   /* 1 point = 2 minutes of TV */
+const SHOP_PER_PT=5; /* 1 point = ₹5 shopping */
 
 const LS_KEY='growthMapState_v1';
+function allotSnap(){
+ return {sarah:{tv:ALLOT.sarah.tv,shop:ALLOT.sarah.shop,t:ALLOT.sarah.t},mirayah:{tv:ALLOT.mirayah.tv,shop:ALLOT.mirayah.shop,t:ALLOT.mirayah.t}};
+}
+function pickAllot(l,r){
+ const ln=l||{tv:0,shop:0,t:0}, rn=r||{tv:0,shop:0,t:0};
+ const lt=Number(ln.t)||0, rt=Number(rn.t)||0;
+ const src=rt>lt?rn:ln;
+ return {tv:Math.max(0,src.tv|0),shop:Math.max(0,src.shop|0),t:Math.max(lt,rt)};
+}
+function applyAllot(A){
+ if(!A)return;
+ for(const g of ['sarah','mirayah']){
+  if(!A[g])continue;
+  if(Number.isInteger(A[g].tv)) ALLOT[g].tv=Math.max(0,A[g].tv);
+  if(Number.isInteger(A[g].shop)) ALLOT[g].shop=Math.max(0,A[g].shop);
+  if(Number.isFinite(A[g].t)) ALLOT[g].t=A[g].t;
+ }
+}
 function currentStateSnapshot(){
  const ext={};
  for(const g of ['sarah','mirayah']){ext[g]={};for(const k of Object.keys(LEVELS[g]))ext[g][k]=LEVELS[g][k].length-BASE_LADDER_LEN[g][k];}
- return {L:LEVEL,X:ext,B:{sarah:{i:BOOK.sarah.idx,d:BOOK.sarah.done,c:BOOK.sarah.custom},mirayah:{i:BOOK.mirayah.idx,d:BOOK.mirayah.done,c:BOOK.mirayah.custom}}};
+ return {L:LEVEL,X:ext,B:{sarah:{i:BOOK.sarah.idx,d:BOOK.sarah.done,c:BOOK.sarah.custom},mirayah:{i:BOOK.mirayah.idx,d:BOOK.mirayah.done,c:BOOK.mirayah.custom}},A:allotSnap()};
 }
 function saveLocal(){
  try{
@@ -665,6 +712,7 @@ function load(){
                 if(Array.isArray(s.B[g].d)) BOOK[g].done=s.B[g].d;
                 if(typeof s.B[g].c==='string') BOOK[g].custom=s.B[g].c; }
   }}
+  applyAllot(s.A);
  }catch(e){/* ignore a malformed hash */}
 }
 
@@ -2371,6 +2419,64 @@ async function refreshWalletCache(gk){
  }catch(e){/* offline — cache stays at its last known value */}
 }
 function getBalance(gk){return WALLET_CACHE[gk].ledger.reduce((sum,r)=>sum+r.delta,0);}
+function clampAllot(gk,bal){
+ bal=Math.max(0,bal|0);
+ let tv=Math.max(0,ALLOT[gk].tv|0), shop=Math.max(0,ALLOT[gk].shop|0), changed=false;
+ if(tv>bal){tv=bal;changed=true;}
+ if(tv+shop>bal){shop=bal-tv;changed=true;}
+ ALLOT[gk].tv=tv;ALLOT[gk].shop=shop;
+ if(changed) ALLOT[gk].t=Date.now();
+ return changed;
+}
+function allotView(gk){
+ const bal=getBalance(gk);
+ clampAllot(gk,bal);
+ const tv=ALLOT[gk].tv, shop=ALLOT[gk].shop, left=Math.max(0,bal-tv-shop);
+ const pct=n=>bal>0?Math.round(n/bal*100):0;
+ return {bal,tv,shop,left,min:tv*TV_PER_PT,rs:shop*SHOP_PER_PT,tvPct:pct(tv),shopPct:pct(shop),leftPct:bal>0?Math.max(0,100-pct(tv)-pct(shop)):0};
+}
+let _allotSaveT=null;
+function scheduleAllotSave(){
+ saveLocal();
+ clearTimeout(_allotSaveT);
+ _allotSaveT=setTimeout(()=>{if(typeof pushCloud==='function')pushCloud();},800);
+}
+function paintAllot(gk){
+ const v=allotView(gk);
+ const leftEl=document.getElementById('allot-left-'+gk);
+ const minEl=document.getElementById('allot-min-'+gk);
+ const rsEl=document.getElementById('allot-rs-'+gk);
+ const leftCard=document.getElementById('allot-card-left-'+gk);
+ const barTv=document.getElementById('allot-bar-tv-'+gk);
+ const barShop=document.getElementById('allot-bar-shop-'+gk);
+ const barLeft=document.getElementById('allot-bar-left-'+gk);
+ if(leftEl)leftEl.textContent=String(v.left);
+ if(minEl)minEl.textContent=String(v.min);
+ if(rsEl)rsEl.textContent=String(v.rs);
+ if(leftCard)leftCard.classList.toggle('empty',v.left===0&&v.bal>0);
+ if(barTv)barTv.style.width=v.tvPct+'%';
+ if(barShop)barShop.style.width=v.shopPct+'%';
+ if(barLeft)barLeft.style.width=v.leftPct+'%';
+}
+function onAllotInput(gk,field,el){
+ const raw=el?el.value:'';
+ if(raw===''||raw==='-'){ALLOT[gk][field]=0;ALLOT[gk].t=Date.now();paintAllot(gk);scheduleAllotSave();return;}
+ let n=parseInt(raw,10);
+ if(!Number.isFinite(n)||n<0)n=0;
+ n=Math.floor(n);
+ const bal=getBalance(gk);
+ const other=field==='tv'?ALLOT[gk].shop:ALLOT[gk].tv;
+ const max=Math.max(0,bal-other);
+ if(n>max){n=max;if(el)el.value=String(n);}
+ ALLOT[gk][field]=n;ALLOT[gk].t=Date.now();
+ paintAllot(gk);scheduleAllotSave();
+}
+function allotStep(gk,field,d){
+ const el=document.getElementById('allot-in-'+field+'-'+gk);
+ const next=Math.max(0,(ALLOT[gk][field]|0)+d);
+ if(el)el.value=String(next);
+ onAllotInput(gk,field,el||{value:String(next)});
+}
 function getStreak(gk){
  const days=new Set(WALLET_CACHE[gk].ledger.filter(r=>r.delta>0).map(r=>r.created_at.slice(0,10)));
  let streak=0,d=new Date();
@@ -2384,11 +2490,34 @@ function getStreak(gk){
 }
 function walletHTML(gk){
  const g=DATA[gk],bal=getBalance(gk),streak=getStreak(gk),hist=WALLET_CACHE[gk].ledger.slice(0,10);
+ const v=allotView(gk);
  const pct=Math.max(0,Math.min(1,bal/50)); /* ring fill is illustrative — caps visually at 50pts, balance number is the real value */
  const arc=Math.round(pct*360);
  let h='<div class="ebar"><h2>💰 Wallet — '+g.name+'</h2></div>';
  h+='<div class="hz-ring" style="--arc:'+arc+'deg"><div class="hz-ring-inner"><div class="hz-ring-lab">points owed</div><div class="hz-ring-num">'+bal+'</div></div></div>';
  h+='<div class="lvline" style="text-align:center;margin:6px 0 16px">🔥 '+streak+' day streak</div>';
+ h+='<div class="allot-wrap">';
+ h+='<div class="sect" style="text-align:center;margin-top:0">Spend plan</div>';
+ h+='<div class="allot-intro">Split '+g.name+'’s points. They stay in the wallet — this is just the plan.<br><b>1 point = '+TV_PER_PT+' min TV</b> · <b>1 point = ₹'+SHOP_PER_PT+'</b></div>';
+ h+='<div class="allot-bar" title="TV / shopping / still free">';
+ h+='<i class="seg-tv" id="allot-bar-tv-'+gk+'" style="width:'+v.tvPct+'%"></i>';
+ h+='<i class="seg-shop" id="allot-bar-shop-'+gk+'" style="width:'+v.shopPct+'%"></i>';
+ h+='<i class="seg-left" id="allot-bar-left-'+gk+'" style="width:'+v.leftPct+'%"></i>';
+ h+='</div>';
+ h+='<div class="allot-grid">';
+ h+='<div class="allot-card tv"><div class="allot-ico">📺</div><div class="allot-name">TV time</div><div class="allot-rate">1 point = <b>'+TV_PER_PT+' minutes</b></div>';
+ h+='<div class="allot-row"><button class="btn mStep" data-act="allotStep" data-gk="'+gk+'" data-allot="tv" data-d="-1">−</button>';
+ h+='<input id="allot-in-tv-'+gk+'" type="number" min="0" step="1" inputmode="numeric" value="'+v.tv+'" data-allot="tv" data-gk="'+gk+'">';
+ h+='<button class="btn mStep" data-act="allotStep" data-gk="'+gk+'" data-allot="tv" data-d="1">+</button></div>';
+ h+='<div class="allot-pay"><span id="allot-min-'+gk+'">'+v.min+'</span><small>minutes</small></div></div>';
+ h+='<div class="allot-card shop"><div class="allot-ico">🛍️</div><div class="allot-name">Shopping</div><div class="allot-rate">1 point = <b>₹'+SHOP_PER_PT+'</b></div>';
+ h+='<div class="allot-row"><button class="btn mStep" data-act="allotStep" data-gk="'+gk+'" data-allot="shop" data-d="-1">−</button>';
+ h+='<input id="allot-in-shop-'+gk+'" type="number" min="0" step="1" inputmode="numeric" value="'+v.shop+'" data-allot="shop" data-gk="'+gk+'">';
+ h+='<button class="btn mStep" data-act="allotStep" data-gk="'+gk+'" data-allot="shop" data-d="1">+</button></div>';
+ h+='<div class="allot-pay">₹<span id="allot-rs-'+gk+'">'+v.rs+'</span><small>to spend</small></div></div>';
+ h+='<div class="allot-card left'+(v.left===0&&v.bal>0?' empty':'')+'" id="allot-card-left-'+gk+'"><div class="allot-ico">⭐</div><div class="allot-name">Still free</div><div class="allot-rate">not in TV or shopping yet</div>';
+ h+='<div class="allot-pay" style="margin-top:28px"><span id="allot-left-'+gk+'">'+v.left+'</span><small>points</small></div></div>';
+ h+='</div></div>';
  if(!KID_VIEW)h+='<div class="actions" style="justify-content:center;margin-bottom:16px">'
   +'<button class="btn primary" data-act="uploadPhotoPrompt" data-gk="'+gk+'">📷 Upload today\'s sheet</button>'
   +'<button class="btn" data-act="addPointsPrompt" data-gk="'+gk+'">⭐ Add points</button>'
@@ -2410,6 +2539,7 @@ async function renderWallet(gk){
  root.innerHTML='<div class="wsempty">Loading wallet…</div>';
  await refreshWalletCache(gk);
  if(ACTIVE_SUBTAB[gk]!=='wallet')return; /* user navigated to a different subtab while the fetch was in flight — don't clobber it with stale wallet content */
+ if(clampAllot(gk,getBalance(gk))) saveLocal();
  root.innerHTML=walletHTML(gk);
 }
 
@@ -2566,8 +2696,11 @@ document.addEventListener('click', e=>{
  else if(act==='payout') payout(gk);
  else if(act==='addPointsPrompt') addPointsPrompt(gk);
  else if(act==='deleteHistoryEntry') deleteHistoryEntry(gk,id);
+ else if(act==='allotStep') allotStep(gk,t.dataset.allot,parseInt(t.dataset.d,10)||0);
 });
 document.addEventListener('input', e=>{
+ const a=e.target.closest('[data-allot]');
+ if(a){ onAllotInput(a.dataset.gk,a.dataset.allot,a); return; }
  const t=e.target.closest('[data-bookinput]'); if(!t) return;
  BOOK[t.dataset.bookinput].custom = t.value;
  clearTimeout(document._bookSaveT);
@@ -2608,7 +2741,7 @@ try{ if(window.supabase) sb=window.supabase.createClient(SB_URL,SB_KEY); }catch(
 function mergeState(local,remote){
  if(!remote)return local;
  if(!local)return remote;
- const out={L:{},X:{},B:{}};
+ const out={L:{},X:{},B:{},A:{}};
  for(const g of ['sarah','mirayah']){
   out.L[g]={};for(const k of Object.keys(local.L[g]||{}))out.L[g][k]=Math.max(local.L[g]?.[k]??0,remote.L?.[g]?.[k]??0);
   out.X[g]={};const xk=new Set([...Object.keys(local.X?.[g]||{}),...Object.keys(remote.X?.[g]||{})]);
@@ -2619,6 +2752,7 @@ function mergeState(local,remote){
    d:[...new Set([...(li.d||[]),...(ri.d||[])])],
    c:(li.c&&li.c.trim())?li.c:((ri.c&&ri.c.trim())?ri.c:null)
   };
+  out.A[g]=pickAllot(local.A?.[g], remote.A?.[g]);
  }
  return out;
 }
@@ -2640,6 +2774,7 @@ function applyState(s){
                if(Array.isArray(s.B[g].d))BOOK[g].done=[...new Set([...(BOOK[g].done||[]),...s.B[g].d])];
                if(typeof s.B[g].c==='string'&&s.B[g].c.trim())BOOK[g].custom=s.B[g].c; }
  }}
+ applyAllot(s.A);
 }
 
 async function writeCloudRaw(stateObj){
@@ -2662,7 +2797,8 @@ async function pushCloud(){
   applyState(merged);
   saveLocal();
   await writeCloudRaw(merged);
-  buildOverview();buildGirl('sarah');buildGirl('mirayah');
+  const typing=document.activeElement&&document.activeElement.matches&&document.activeElement.matches('[data-allot]');
+  if(!typing){buildOverview();buildGirl('sarah');buildGirl('mirayah');}
  }catch(e){/* offline or blocked — local save already happened, not fatal */}
 }
 
@@ -2675,7 +2811,8 @@ async function pullAndMergeCloud(silent){
   applyState(merged);
   saveLocal();
   if(!silent)await writeCloudRaw(merged);
-  buildOverview();buildGirl('sarah');buildGirl('mirayah');
+  const typing=document.activeElement&&document.activeElement.matches&&document.activeElement.matches('[data-allot]');
+  if(!typing){buildOverview();buildGirl('sarah');buildGirl('mirayah');}
  }catch(e){/* offline — local state stands, will retry on next load/change */}
 }
 
