@@ -647,6 +647,28 @@ const LEVEL={
  sarah:  {maths:5, english:3, science:3, swimming:7, music:2, riding:3, madhurim:9},
  mirayah:{maths:0, english:0, science:0, swimming:5, music:0, riding:2, madhurim:1}
 };
+const LEVEL_T={sarah:{}, mirayah:{}}; /* last-write timestamps so an intentional step-down is not undone by cloud max() merge */
+function touchLevel(gk,sk){LEVEL_T[gk][sk]=Date.now();}
+function levelTSnap(){
+ const o={};
+ for(const g of ['sarah','mirayah']){o[g]={};for(const k of Object.keys(LEVEL[g]||{}))o[g][k]=LEVEL_T[g][k]||0;}
+ return o;
+}
+function applyLevelT(LT){
+ if(!LT)return;
+ for(const g of ['sarah','mirayah']){
+  if(!LT[g])continue;
+  if(!LEVEL_T[g])LEVEL_T[g]={};
+  for(const k of Object.keys(LT[g])) if(Number.isFinite(LT[g][k])) LEVEL_T[g][k]=LT[g][k];
+ }
+}
+function pickLevel(lv,rv,lt,rt){
+ const l=Number.isInteger(lv)?lv:0, r=Number.isInteger(rv)?rv:0;
+ const lts=Number(lt)||0, rts=Number(rt)||0;
+ if(lts>rts) return {v:l,t:lts};
+ if(rts>lts) return {v:r,t:rts};
+ return {v:Math.max(l,r),t:Math.max(lts,rts)};
+}
 const BOOK ={sarah:{idx:0,custom:null,done:[]}, mirayah:{idx:0,custom:null,done:[]}};
 const ALLOT={sarah:{tv:0,shop:0,t:0}, mirayah:{tv:0,shop:0,t:0}};
 const TV_PER_PT=2;   /* 1 point = 2 minutes of TV */
@@ -674,7 +696,7 @@ function applyAllot(A){
 function currentStateSnapshot(){
  const ext={};
  for(const g of ['sarah','mirayah']){ext[g]={};for(const k of Object.keys(LEVELS[g]))ext[g][k]=LEVELS[g][k].length-BASE_LADDER_LEN[g][k];}
- return {L:LEVEL,X:ext,B:{sarah:{i:BOOK.sarah.idx,d:BOOK.sarah.done,c:BOOK.sarah.custom},mirayah:{i:BOOK.mirayah.idx,d:BOOK.mirayah.done,c:BOOK.mirayah.custom}},A:allotSnap()};
+ return {L:LEVEL,X:ext,B:{sarah:{i:BOOK.sarah.idx,d:BOOK.sarah.done,c:BOOK.sarah.custom},mirayah:{i:BOOK.mirayah.idx,d:BOOK.mirayah.done,c:BOOK.mirayah.custom}},A:allotSnap(),LT:levelTSnap()};
 }
 function saveLocal(){
  try{
@@ -713,6 +735,7 @@ function load(){
                 if(typeof s.B[g].c==='string') BOOK[g].custom=s.B[g].c; }
   }}
   applyAllot(s.A);
+  applyLevelT(s.LT);
  }catch(e){/* ignore a malformed hash */}
 }
 
@@ -2306,13 +2329,13 @@ function doDoneLevelUp(gk,sk){const lad=LEVELS[gk][sk];
     (e.g. MUSIC 'mins' hit 2104 after 8 clicks). Tier still climbs by 1 each
     push, so growth stays linear in tier instead of compounding. */
  if(LEVEL[gk][sk]>=lad.length-1)lad.push(intensifyRung(lad[BASE_LADDER_LEN[gk][sk]-1],lad.length-BASE_LADDER_LEN[gk][sk]+1));
- LEVEL[gk][sk]++;save();renderSub(gk,sk);makeWS(gk,sk);toast('⬆️ Level up! Now: '+lad[LEVEL[gk][sk]].n);
+ LEVEL[gk][sk]++;touchLevel(gk,sk);save();renderSub(gk,sk);makeWS(gk,sk);toast('⬆️ Level up! Now: '+lad[LEVEL[gk][sk]].n);
 }
 function doneLevelUp(gk,sk){
  if(!isAcad(sk)){doDoneLevelUp(gk,sk);return;} /* lane subjects (swimming/music/riding/madhurim) have no answer key — honor system stays */
  openMasteryCheck(gk,sk);
 }
-function stepDown(gk,sk){const lad=LEVELS[gk][sk];if(LEVEL[gk][sk]>0){LEVEL[gk][sk]--;save();renderSub(gk,sk);makeWS(gk,sk);toast('↩︎ Stepped back to: '+lad[LEVEL[gk][sk]].n);}else toast('Already at the first rung.');}
+function stepDown(gk,sk){const lad=LEVELS[gk][sk];if(LEVEL[gk][sk]>0){LEVEL[gk][sk]--;touchLevel(gk,sk);save();renderSub(gk,sk);makeWS(gk,sk);toast('↩︎ Stepped back to: '+lad[LEVEL[gk][sk]].n);}else toast('Already at the first rung.');}
 
 /* ===== MASTERY GATE: level-up on an academic subject requires a scored worksheet ===== */
 let MGK=null, MSK=null, MTOTAL=0;
@@ -2728,10 +2751,11 @@ document.getElementById('masteryOverlay').addEventListener('click',e=>{if(e.targ
    Open by design: public anon key, RLS lets anyone read/write this one table,
    no per-user auth. This is a private family tool shared by a plain link, not
    a public product — that tradeoff was a deliberate, explicit decision, not
-   an oversight. Merge on every pull is monotonic: max() per LEVEL/X counter
-   (never regress real progress if the two devices diverged), union of
-   BOOK.done (never lose a finished book), max of BOOK.idx, BOOK.custom kept
-   from whichever side actually has a non-empty value. */
+   an oversight. LEVEL uses last-write timestamp (LT) so an intentional ↩︎
+   step-down is kept; when timestamps are missing/equal it still max()es so a
+   stale device cannot roll progress back. X stays monotonic max. Union of
+   BOOK.done, max of BOOK.idx, BOOK.custom kept from whichever side actually
+   has a non-empty value. */
 const SB_URL='https://fuajabuexuqjoqndbeed.supabase.co';
 const SB_KEY='sb_publishable_GvCjPmsNOd56vxVrMCeufw_KtIze4O9';
 const SB_ROW_KEY='family';
@@ -2741,9 +2765,14 @@ try{ if(window.supabase) sb=window.supabase.createClient(SB_URL,SB_KEY); }catch(
 function mergeState(local,remote){
  if(!remote)return local;
  if(!local)return remote;
- const out={L:{},X:{},B:{},A:{}};
+ const out={L:{},X:{},B:{},A:{},LT:{}};
  for(const g of ['sarah','mirayah']){
-  out.L[g]={};for(const k of Object.keys(local.L[g]||{}))out.L[g][k]=Math.max(local.L[g]?.[k]??0,remote.L?.[g]?.[k]??0);
+  out.L[g]={};out.LT[g]={};
+  const lk=new Set([...Object.keys(local.L?.[g]||{}),...Object.keys(remote.L?.[g]||{})]);
+  for(const k of lk){
+   const p=pickLevel(local.L?.[g]?.[k],remote.L?.[g]?.[k],local.LT?.[g]?.[k],remote.LT?.[g]?.[k]);
+   out.L[g][k]=p.v;out.LT[g][k]=p.t;
+  }
   out.X[g]={};const xk=new Set([...Object.keys(local.X?.[g]||{}),...Object.keys(remote.X?.[g]||{})]);
   for(const k of xk)out.X[g][k]=Math.max(local.X?.[g]?.[k]??0,remote.X?.[g]?.[k]??0);
   const li=local.B?.[g]||{i:0,d:[],c:null},ri=remote.B?.[g]||{i:0,d:[],c:null};
@@ -2775,6 +2804,7 @@ function applyState(s){
                if(typeof s.B[g].c==='string'&&s.B[g].c.trim())BOOK[g].custom=s.B[g].c; }
  }}
  applyAllot(s.A);
+ applyLevelT(s.LT);
 }
 
 async function writeCloudRaw(stateObj){
