@@ -2232,15 +2232,28 @@ function wsAnswerKeyForStorage(ws){
  return {keyLabel:ws.keyLabel||'Answer key — for grown-ups',ans:ws.ans||[]};
 }
 let CURWS=null, CURGK=null, CURSK=null, CURSHEETID=null;
-let WS_REQ_TOKEN=0; /* bumped on every makeWS call; lets a slow-resolving persistSheet() insert
-   detect it's been superseded by a newer "Make worksheet" press (e.g. quick reroll) and skip
-   writing CURSHEETID, instead of racing the newer call and pointing it at a stale/discarded sheet */
-function makeWS(gk,sk){const li=LEVEL[gk][sk];const ws=(sk==='english')?GENS[gk][sk](li,curBook(gk)):GENS[gk][sk](li);CURWS=ws;CURGK=gk;CURSK=sk;CURSHEETID=null;
- const reqToken=++WS_REQ_TOKEN;
+const WS_CACHE={}; /* per kid+subject, so switching Sarah↔Mirayah (or subjects) does not wipe a sheet that was already made */
+function wsCacheKey(gk,sk){return gk+'|'+sk;}
+function rememberWS(gk,sk,ws,sheetId){
+ CURWS=ws;CURGK=gk;CURSK=sk;
+ CURSHEETID=(sheetId===undefined)?null:sheetId;
+ WS_CACHE[wsCacheKey(gk,sk)]={ws:ws,sheetId:CURSHEETID};
+}
+function paintCachedWS(gk,sk){
+ const hit=WS_CACHE[wsCacheKey(gk,sk)];
+ if(!hit||!hit.ws)return false;
+ CURWS=hit.ws;CURGK=gk;CURSK=sk;CURSHEETID=hit.sheetId||null;
+ const prev=document.getElementById('wsprev-'+gk+sk),empty=document.getElementById('wsempty-'+gk+sk);
+ if(prev){prev.innerHTML=wsHTML(hit.ws);prev.style.display='block';}
+ if(empty)empty.style.display='none';
+ return true;
+}
+function makeWS(gk,sk){const li=LEVEL[gk][sk];const ws=(sk==='english')?GENS[gk][sk](li,curBook(gk)):GENS[gk][sk](li);
+ rememberWS(gk,sk,ws,null);
  const prev=document.getElementById('wsprev-'+gk+sk),empty=document.getElementById('wsempty-'+gk+sk);
  if(prev){prev.innerHTML=wsHTML(ws);prev.style.display='block';}if(empty)empty.style.display='none';
- if(isAcad(sk))persistSheet(gk,sk,li,ws,reqToken);}
-async function persistSheet(gk,sk,li,ws,reqToken){
+ if(isAcad(sk))persistSheet(gk,sk,li,ws);}
+async function persistSheet(gk,sk,li,ws){
  if(!sb)return;
  try{
   const mtotal=wsQuestionCount(ws)||1;
@@ -2250,7 +2263,10 @@ async function persistSheet(gk,sk,li,ws,reqToken){
    answer_key:wsAnswerKeyForStorage(ws),
    mtotal,status:'pending_upload'
   }).select('id').single();
-  if(!error&&data&&reqToken===WS_REQ_TOKEN)CURSHEETID=data.id; /* if a newer makeWS() fired while this insert was in flight, reqToken is now stale — drop the write instead of clobbering the current sheet's id */
+  if(error||!data)return;
+  const hit=WS_CACHE[wsCacheKey(gk,sk)];
+  if(hit&&hit.ws===ws)hit.sheetId=data.id; /* ignore if this subject was rerolled while the insert was in flight */
+  if(CURGK===gk&&CURSK===sk&&CURWS===ws)CURSHEETID=data.id;
  }catch(e){/* offline — upload/AI-grade simply won't be available for this sheet until it can retry */}
 }
 function printWS(){if(!CURWS){toast('Press “Make worksheet” first.');return;}document.getElementById('printRoot').innerHTML=wsHTML(CURWS);window.print();}
@@ -2666,14 +2682,8 @@ function selSub(gk,sk,btn){const bar=document.getElementById('subtabs-'+gk);
  const s=DATA[gk].subjects[sk];if(btn){btn.style.cssText='background:'+s.accent+';border-color:'+s.accent+';color:#0f1226;font-weight:700';}
  renderSub(gk,sk);}
 function renderSub(gk,sk){const root=document.getElementById('content-'+gk);root.innerHTML=panelHTML(gk,sk);wireTasks(root);
- /* restore an already-made worksheet when navigating back to this exact subject —
-    CURWS/CURGK/CURSK/CURSHEETID are page-lifetime singletons (not per-subject), so a sheet
-    generated here survives switching tabs/subjects and back; panelHTML always starts blank,
-    so re-paint it here instead of losing it. */
- if(CURGK===gk&&CURSK===sk&&CURWS){
-  const prev=document.getElementById('wsprev-'+gk+sk),empty=document.getElementById('wsempty-'+gk+sk);
-  if(prev){prev.innerHTML=wsHTML(CURWS);prev.style.display='block';}if(empty)empty.style.display='none';
- }
+ /* panelHTML always starts blank — restore this kid+subject's cached sheet if one was made */
+ paintCachedWS(gk,sk);
 }
 
 /* ===== OVERVIEW (driven by current levels) ===== */
