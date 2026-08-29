@@ -2396,7 +2396,7 @@ function openMasteryCheck(gk,sk){
  const need=Math.ceil(MTOTAL*MASTERY_PASS);
  document.getElementById('mNeed').textContent='Need '+need+'/'+MTOTAL+' ('+Math.round(MASTERY_PASS*100)+'%+) to level up. Below that → fresh practice sheet at the same level.';
  const input=document.getElementById('mCorrect'),aiNote=document.getElementById('mAiNote');
- input.max=MTOTAL;input.value=0;aiNote.style.display='none';
+ input.max=MTOTAL;input.value=MTOTAL;aiNote.style.display='none'; /* default to full marks — pressing Confirm with no edits should level up, not silently fail the 80% bar at 0/MTOTAL */
  document.getElementById('masteryOverlay').style.display='flex';
  if(CURSHEETID)prefillFromAiVerdict(CURSHEETID,input,aiNote,MTOTAL);
 }
