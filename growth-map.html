@@ -2563,14 +2563,15 @@ function getStreak(gk){
 function walletHTML(gk){
  const g=DATA[gk],bal=getBalance(gk),streak=getStreak(gk),hist=WALLET_CACHE[gk].ledger.slice(0,10);
  const v=allotView(gk);
- const pct=Math.max(0,Math.min(1,bal/50)); /* ring fill is illustrative — caps visually at 50pts, balance number is the real value */
+ const pct=Math.max(0,Math.min(1,v.left/50)); /* ring fill is illustrative — caps visually at 50pts, still-free number is the real value */
  const arc=Math.round(pct*360);
  let h='<div class="ebar"><h2>💰 Wallet — '+g.name+'</h2></div>';
- h+='<div class="hz-ring" style="--arc:'+arc+'deg"><div class="hz-ring-inner"><div class="hz-ring-lab">points owed</div><div class="hz-ring-num">'+bal+'</div></div></div>';
+ h+='<div class="hz-ring" style="--arc:'+arc+'deg"><div class="hz-ring-inner"><div class="hz-ring-lab">still free</div><div class="hz-ring-num">'+v.left+'</div></div></div>';
+ h+='<div class="lvline" style="text-align:center;margin:2px 0 0;opacity:.7">'+bal+' points owed total</div>';
  h+='<div class="lvline" style="text-align:center;margin:6px 0 16px">🔥 '+streak+' day streak</div>';
  h+='<div class="allot-wrap">';
  h+='<div class="sect" style="text-align:center;margin-top:0">Spend plan</div>';
- h+='<div class="allot-intro">Split '+g.name+'’s points. They stay in the wallet — this is just the plan.<br><b>1 point = '+TV_PER_PT+' min TV</b> · <b>1 point = ₹'+SHOP_PER_PT+'</b></div>';
+ h+='<div class="allot-intro">Split '+g.name+'’s points between TV and shopping. Points still count until paid out.<br><b>1 point = '+TV_PER_PT+' min TV</b> · <b>1 point = ₹'+SHOP_PER_PT+'</b></div>';
  h+='<div class="allot-bar" title="TV / shopping / still free">';
  h+='<i class="seg-tv" id="allot-bar-tv-'+gk+'" style="width:'+v.tvPct+'%"></i>';
  h+='<i class="seg-shop" id="allot-bar-shop-'+gk+'" style="width:'+v.shopPct+'%"></i>';
