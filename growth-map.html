@@ -650,6 +650,27 @@ const LEVEL={
  mirayah:{maths:0, english:0, science:0, swimming:5, music:0, riding:2, madhurim:1}
 };
 const LEVEL_T={sarah:{}, mirayah:{}}; /* last-write timestamps so an intentional step-down is not undone by cloud max() merge */
+/* SYNC-BEFORE-MUTATE GUARD (2026-09-16): page renders instantly from a possibly-stale local
+   cache/hash BEFORE the async initial pullAndMergeCloud() resolves (see its own call site comment
+   near the bottom of this file). Once LEVEL carries a last-write timestamp (see pickLevel below),
+   a level-changing click fired in that stale window is catastrophic, not just wrong-for-a-moment:
+   Date.now() at click time is always newer than whatever real timestamp is already on the cloud,
+   so pickLevel picks the stale, LOWER, freshly-time-stamped value forever — permanently erasing
+   real progress network-wide, on every device, until someone notices and manually re-levels past
+   it. Concretely reproduced 2026-09-16: Mirayah's maths ladder had genuinely reached rung 10/10
+   (screenshot evidence), but the cloud row's actual L.mirayah.maths was 2 with an LT dated three
+   weeks earlier than the screenshot — some device rendered its own stale cached "2" before sync,
+   a level-changing click landed in that window, and the resulting fresh-but-lower write silently
+   became the new source of truth for every future device pull. Fix: force a real cloud pull+merge
+   to complete (or fail fast if offline — unchanged offline resilience) before any level-mutating
+   action reads LEVEL, so the action always operates on the true latest known state instead of
+   a race-prone local snapshot. */
+let SYNCED_ONCE=false;
+async function ensureSynced(){
+ if(!sb||SYNCED_ONCE)return;
+ try{ await Promise.race([pullAndMergeCloud(true), new Promise(res=>setTimeout(res,4000))]); }catch(e){/* offline — proceed on local state, unchanged from prior behavior */}
+ SYNCED_ONCE=true;
+}
 function touchLevel(gk,sk){LEVEL_T[gk][sk]=Date.now();}
 function levelTSnap(){
  const o={};
@@ -2371,7 +2392,9 @@ async function uploadSheetPhoto(sheetId,file){
 function isAcad(sk){return sk==='english'||sk==='maths'||sk==='science';}
 const MASTERY_PASS=0.8; /* need 80%+ correct (per answer key) to level up an academic subject */
 
-function doDoneLevelUp(gk,sk){const lad=LEVELS[gk][sk];
+async function doDoneLevelUp(gk,sk){
+ await ensureSynced(); /* never mutate off a possibly-stale pre-sync LEVEL — see SYNC-BEFORE-MUTATE GUARD */
+ const lad=LEVELS[gk][sk];
  /* Always scale from the true original last hand-authored rung (never from a
     previously-intensified synthetic one) — otherwise each level-up multiplies
     an already-multiplied value by an ever-larger factor and runs away
@@ -2380,11 +2403,14 @@ function doDoneLevelUp(gk,sk){const lad=LEVELS[gk][sk];
  if(LEVEL[gk][sk]>=lad.length-1)lad.push(intensifyRung(lad[BASE_LADDER_LEN[gk][sk]-1],lad.length-BASE_LADDER_LEN[gk][sk]+1));
  LEVEL[gk][sk]++;touchLevel(gk,sk);save();renderSub(gk,sk);makeWS(gk,sk);toast('⬆️ Level up! Now: '+lad[LEVEL[gk][sk]].n);
 }
-function doneLevelUp(gk,sk){
+async function doneLevelUp(gk,sk){
  if(!isAcad(sk)){doDoneLevelUp(gk,sk);return;} /* lane subjects (swimming/music/riding/madhurim) have no answer key — honor system stays */
+ await ensureSynced(); /* mastery gate reads LEVEL/lad too (openMasteryCheck→confirmMastery→doDoneLevelUp) — sync before that first read */
  openMasteryCheck(gk,sk);
 }
-function stepDown(gk,sk){const lad=LEVELS[gk][sk];if(LEVEL[gk][sk]>0){LEVEL[gk][sk]--;touchLevel(gk,sk);save();renderSub(gk,sk);makeWS(gk,sk);toast('↩︎ Stepped back to: '+lad[LEVEL[gk][sk]].n);}else toast('Already at the first rung.');}
+async function stepDown(gk,sk){
+ await ensureSynced();
+ const lad=LEVELS[gk][sk];if(LEVEL[gk][sk]>0){LEVEL[gk][sk]--;touchLevel(gk,sk);save();renderSub(gk,sk);makeWS(gk,sk);toast('↩︎ Stepped back to: '+lad[LEVEL[gk][sk]].n);}else toast('Already at the first rung.');}
 
 /* ===== MASTERY GATE: level-up on an academic subject requires a scored worksheet ===== */
 let MGK=null, MSK=null, MTOTAL=0;
@@ -2887,7 +2913,8 @@ async function pullAndMergeCloud(silent){
   if(!silent)await writeCloudRaw(merged);
   const typing=document.activeElement&&document.activeElement.matches&&document.activeElement.matches('[data-allot]');
   if(!typing){buildOverview();buildGirl('sarah');buildGirl('mirayah');}
- }catch(e){/* offline — local state stands, will retry on next load/change */}
+  SYNCED_ONCE=true; /* a real merge landed — ensureSynced() can now no-op for any click that follows */
+ }catch(e){SYNCED_ONCE=true;/* offline — local state stands, will retry on next load/change; don't force every subsequent click to re-wait the ensureSynced timeout */}
 }
 
 if(sb){
