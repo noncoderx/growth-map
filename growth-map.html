@@ -2829,6 +2829,9 @@ function buildGirl(gk){const g=DATA[gk],bar=document.getElementById('subtabs-'+g
  const wb=document.createElement('button');wb.className='subtab';wb.dataset.sk='wallet';wb.textContent='💰 Wallet';
  wb.onclick=()=>{ACTIVE_SUBTAB[gk]='wallet';bar.querySelectorAll('.subtab').forEach(x=>{if(!x.classList.contains('soon'))x.style.cssText='';});wb.style.cssText='background:'+DATA[gk].subjects[keys[0]].accent+';border-color:'+DATA[gk].subjects[keys[0]].accent+';color:#fff;font-weight:700';renderWallet(gk);};
  bar.appendChild(wb);
+ const rb=document.createElement('button');rb.className='subtab';rb.dataset.sk='reflect';rb.textContent='🧠 Reflect';
+ rb.onclick=()=>{ACTIVE_SUBTAB[gk]='reflect';bar.querySelectorAll('.subtab').forEach(x=>{if(!x.classList.contains('soon'))x.style.cssText='';});rb.style.cssText='background:'+DATA[gk].subjects[keys[0]].accent+';border-color:'+DATA[gk].subjects[keys[0]].accent+';color:#fff;font-weight:700';renderReflect(gk);};
+ bar.appendChild(rb);
  keys.forEach(sk=>{const s=g.subjects[sk],b=document.createElement('button');b.className='subtab';b.dataset.sk=sk;b.textContent=s.icon+' '+s.label;b.onclick=()=>selSub(gk,sk,b);bar.appendChild(b);});
  SOON.forEach(t=>{const b=document.createElement('button');b.className='subtab soon';b.disabled=true;b.textContent=t+' · soon';bar.appendChild(b);});
  /* Unified subtab-restore rule for both kid-view and parent-view: a rebuild (cloud sync,
@@ -2840,6 +2843,8 @@ function buildGirl(gk){const g=DATA[gk],bar=document.getElementById('subtabs-'+g
   defaultLand();
  }else if(ACTIVE_SUBTAB[gk]==='wallet'){
   wb.click(); /* rebuild while already on Wallet — (re)land on Wallet, for either view */
+ }else if(ACTIVE_SUBTAB[gk]==='reflect'){
+  rb.click(); /* rebuild while already on Reflect — (re)land on Reflect */
  }else{
   const activeBtn=bar.querySelector('.subtab[data-sk="'+ACTIVE_SUBTAB[gk]+'"]');
   if(activeBtn)selSub(gk,ACTIVE_SUBTAB[gk],activeBtn);else defaultLand(); /* stay on the same subject tab; only fall back if it no longer exists */
@@ -2868,6 +2873,84 @@ function goToSubject(gk,sk){
  const subBtn=document.querySelector('#subtabs-'+gk+' button[data-sk="'+sk+'"]'); if(subBtn) subBtn.click();
 }
 
+/* ===== REFLECTION / MIND-MAP SHEET (2026-09-20) =====
+   Requested by Mr. X's wife off a reference worksheet ("Reflection: Greener Solutions" —
+   explore/learn/idea/thinking/connections/takeaway, 6 boxes). Built generic (any topic the
+   kid is exploring, not tied to one subject or ladder — printed topic line is hand-filled,
+   same convention as this file's other printable sheets) rather than copying the reference's
+   specific biodiversity theme. Age-differentiated per Kid Uni's per-age dials: Sarah's prompts
+   ask for reasoning/impact/why; Mirayah's are shorter, concrete, and lean on drawing, matching
+   her existing worksheets' tone (ws_science_mirayah's guess-then-test style, "draw your
+   favourite part" from her English Block A). Lives as its own subtab per kid (not nested in a
+   subject), since the whole point is a topic-agnostic explore/reflect tool. */
+const REFLECT_PROMPTS={
+ sarah:{explore:['Topic or question I explored:','What made me want to explore this?'],
+  learn:['A new idea I discovered:','Why do you think this idea matters?'],
+  idea:[['What is the idea, method, or solution?','🌱'],['How does it work?','⚙️'],['Where or when could it be used?','📍']],
+  think:[['How could this help people, or solve a problem?','🌍'],['Who could use it, and why would they want to?','👥'],['What impact could it have, big or small?','📈']],
+  connect:'This connects to (write 2–3 things you already know):',
+  surprise:'I was surprised to learn that…',
+  question:'A question I still have is…',
+  takeaway:'The most important thing I learned is _________________________ because _________________________.'},
+ mirayah:{explore:['What did I look at or read about?','Why did I want to find out about it?'],
+  learn:['One new thing I found out:','Why is that interesting?'],
+  idea:[['Draw it or write about it here:','🌱'],['How does it work, or what does it do?','⚙️'],['Where could you find it or use it?','📍']],
+  think:[['How could it help someone?','🌍'],['Who might like it or use it?','👥'],['Draw a picture of it being used:','📈']],
+  connect:'This reminds me of (write 1–2 things):',
+  surprise:'I was surprised that…',
+  question:'Something I still wonder about…',
+  takeaway:'The best part I learned was _____________ because _____________.'}
+};
+function reflectBox(h,ico,rows){
+ return '<div style="border:1.5px solid #c9ccd6;border-radius:8px;padding:10px 12px;margin-bottom:4px">'
+  +'<div class="lab" style="margin-top:0">'+ico+' '+h+'</div>'
+  +rows.map(r=>'<div class="q">'+(r[1]?r[1]+' ':'')+r[0]+'</div><div class="ln"></div>').join('')
+  +'</div>';
+}
+function reflectSheet(gk,topic){
+ const g=DATA[gk],P=REFLECT_PROMPTS[gk],t=(topic||'').trim();
+ let h='<div class="sheet"><h1>🧠 Reflection — '+g.name+'</h1><div class="s">Exploring an idea, my way</div>'
+  +'<div class="meta"><span>Name: '+g.name+'</span><span>Date: __________</span></div>'
+  +'<div class="lab" style="margin-top:2px">Topic</div><div class="q">'+(t?t:'____________________________________________')+'</div>';
+ h+='<div class="grid2">'
+  +reflectBox('What did I explore?','🔍',P.explore.map(x=>[x]))
+  +reflectBox('What did I learn?','💡',P.learn.map(x=>[x]))
+  +'</div>';
+ h+='<div class="grid2">'
+  +reflectBox('My idea','🌱',P.idea)
+  +reflectBox('My thinking','🤔',P.think)
+  +'</div>';
+ h+='<div class="grid2">'
+  +reflectBox('Make connections','🔗',[[P.connect]])
+  +('<div>'+reflectBox('I was surprised…','⭐',[[P.surprise]])+reflectBox('A question I still have…','❓',[[P.question]])+'</div>')
+  +'</div>';
+ h+='<div class="lab">🌳 My takeaway</div><div class="q">'+P.takeaway+'</div><div class="ln"></div><div class="ln"></div>';
+ h+='<div class="note">Made fresh by the Growth Map — any topic, any age, one way of thinking it through.</div></div>';
+ return h;
+}
+function makeReflect(gk){
+ const inp=document.getElementById('reflectTopic-'+gk),topic=inp?inp.value:'';
+ const prev=document.getElementById('reflectPrev-'+gk);
+ prev.innerHTML=reflectSheet(gk,topic);prev.style.display='block';
+ const empty=document.getElementById('reflectEmpty-'+gk);if(empty)empty.style.display='none';
+}
+function printReflect(gk){
+ const inp=document.getElementById('reflectTopic-'+gk),topic=inp?inp.value:'';
+ document.getElementById('printRoot').innerHTML=reflectSheet(gk,topic);window.print();
+}
+function renderReflect(gk){
+ const g=DATA[gk],root=document.getElementById('content-'+gk);
+ root.innerHTML='<div class="ebar"><h2>🧠 Explore &amp; Reflect — '+g.name+'</h2></div>'
+  +'<div class="who">Any topic '+g.name+'’s curious about — a book, a project, something from school, a question from real life.</div>'
+  +'<div class="sect">Topic</div>'
+  +'<input id="reflectTopic-'+gk+'" type="text" placeholder="e.g. Why do volcanoes erupt? / Our trip to the zoo / The book I just finished" style="width:100%;padding:10px 12px;border-radius:8px;border:1.5px solid #c9ccd6;font-size:14px;margin-bottom:10px;box-sizing:border-box">'
+  +'<div class="actions">'
+  +'<button class="btn primary" data-act="makeReflect" data-gk="'+gk+'">🧠 Make sheet</button>'
+  +'<button class="btn" data-act="printReflect" data-gk="'+gk+'">🖨️ Print</button>'
+  +'</div>'
+  +'<div class="wsempty" id="reflectEmpty-'+gk+'">Type a topic (or leave it blank to fill in by hand), then press “Make sheet.”</div>'
+  +'<div class="wsprev" id="reflectPrev-'+gk+'" style="display:none"></div>';
+}
 /* ===== TASK-SHEET (blank weekly grid) PRINT ===== */
 function tasksSheet(gk,sk){const g=DATA[gk],s=g.subjects[sk],D=['M','T','W','T','F','S','S'];
  const rows=s.daily.map(d=>'<tr><td style="font-weight:bold;border:1px solid #b9bdc9;padding:6px 8px;font-size:12px">'+d.t+'<br><span style="font-weight:normal;color:#6a7186;font-size:11px">'+d.s+'</span></td>'+D.map(()=>'<td style="border:1px solid #b9bdc9;text-align:center;width:30px"><span style="display:inline-block;width:14px;height:14px;border:1.5px solid #1c2230;border-radius:3px"></span></td>').join('')+'</tr>').join('');
@@ -2890,6 +2973,8 @@ document.addEventListener('click', e=>{
  else if(act==='printWS') printWS();
  else if(act==='downloadWS') downloadWS();
  else if(act==='printTasks') printTasks(gk,sk);
+ else if(act==='makeReflect') makeReflect(gk);
+ else if(act==='printReflect') printReflect(gk);
  else if(act==='finishBook') finishBook(gk);
  else if(act==='nextBook') nextBook(gk);
  else if(act==='goSubject') goToSubject(gk,sk);
