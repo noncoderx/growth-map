@@ -1842,6 +1842,27 @@ const RHETORIC=[
 const VT_ORDER=['easy','mid','hard','harder','expert'];
 const GT_ORDER=['easy','hard'];
 function effTier(order,cur,boost){const shift=Math.floor((boost||0)/3);return order[Math.min(order.length-1,order.indexOf(cur)+shift)];}
+// "About my book" prompt sets — reported bug (2026-09-20, Sarah's mum): the exact same 3/4 prompts
+// showed up on every worksheet no matter what book was being read, because there was never a pool
+// to draw from — one hardcoded array, always. Fixed by giving each girl several genuinely different
+// prompt sets (same open-ended/ungraded intent, same item count as before) and picking one at random
+// per worksheet via P(), same pattern already used everywhere else in this file for variety banks
+// (SIGHT/RHYME/MINISTORY/GRAMMAR etc). Applied to BOTH girls since ws_english_mirayah's Block A has
+// the identical single-hardcoded-array flaw as Sarah's Block B — same bug class, fixed in both places.
+const SARAH_BOOK_PROMPTS=[
+ ['1) Who is the main character? Describe them with two details.','2) Write what happened in the part you read today (3–4 sentences).','3) Find a word in your book you didn’t know. Write it + what you think it means.','4) What do you predict happens next? Why do you think so?'],
+ ['1) Who is your favourite character so far, and why?','2) Describe the setting — where and when does the story happen?','3) Find a word in your book you didn’t know. Write it + what you think it means.','4) If you could ask the main character one question, what would it be?'],
+ ['1) What problem is the main character trying to solve?','2) Write what happened in the part you read today (3–4 sentences).','3) Pick one sentence you liked. Copy it, then explain why you liked it.','4) Do you think the main character is making good choices? Why or why not?'],
+ ['1) How does the main character feel right now in the story, and why?','2) What is one thing that has surprised you so far?','3) Find a word in your book you didn’t know. Write it + what you think it means.','4) What do you predict happens next? Why do you think so?'],
+ ['1) Name two characters and one way they are different from each other.','2) Write what happened in the part you read today (3–4 sentences).','3) Would you make the same choice as the main character? Why or why not?','4) What question would you ask the author about this book?']
+];
+const MIRAYAH_BOOK_PROMPTS=[
+ ['1) Who is in the story?  ____________________','2) One new word I learned:  ____________','3) Draw your favourite part, then write about it.'],
+ ['1) Where does the story happen?  ____________________','2) One new word I learned:  ____________','3) Draw the part that made you laugh or feel surprised.'],
+ ['1) Who is your favourite character, and why?  ____________________','2) What happened at the end of the story?  ____________________','3) Draw your favourite part, then write about it.'],
+ ['1) What is this book mostly about?  ____________________','2) One new word I learned:  ____________','3) Would you read this book again? Why or why not?'],
+ ['1) Name one thing that happened in the story.  ____________________','2) One new word I learned:  ____________','3) Draw a picture of your favourite character.']
+];
 function ws_english_sarah(li,book){const L=LEVELS.sarah.english[li];let blocks=[],ans=[];
  const effVt=effTier(VT_ORDER,L.vt,L.boost), effGt=effTier(GT_ORDER,L.gt,L.boost);
  // A vocab
@@ -1850,11 +1871,7 @@ function ws_english_sarah(li,book){const L=LEVELS.sarah.english[li];let blocks=[
  vs.forEach(v=>va.push(v[0]+'='+v[1]));ans.push('A meanings: '+va.join('; '));
  // B about my book — no printed answer key exists (child's own book, open-ended), so it must not
  // count toward MTOTAL/mastery — same fix pattern as science/mirayah Block A (commit 413d819).
- blocks.push({h:'B. About my book — “'+book+'”',items:[
-   '1) Who is the main character? Describe them with two details.',
-   '2) Write what happened in the part you read today (3–4 sentences).',
-   '3) Find a word in your book you didn’t know. Write it + what you think it means.',
-   '4) What do you predict happens next? Why do you think so?'],write:2,ungraded:true});
+ blocks.push({h:'B. About my book — “'+book+'”',items:P(SARAH_BOOK_PROMPTS),write:2,ungraded:true});
  // C passage
  const pg=pickPassage(L.pt);
  blocks.push({h:'C. Reading — read &amp; answer',passage:pg.t,items:pg.q,write:2});ans.push('C: '+pg.a.join(' | '));
@@ -2031,10 +2048,7 @@ function ws_english_mirayah(li,book){const L=LEVELS.mirayah.english[li];let bloc
  // A about my book — no printed answer key exists (child's own book, open-ended), so it must not
  // count toward MTOTAL/mastery — same fix pattern as ws_english_sarah's Block B (commit 4bd9ee8)
  // and ws_science_mirayah's Block A (commit 413d819).
- blocks.push({h:nextLetter()+'. About my book — “'+book+'”',items:[
-   '1) Who is in the story?  ____________________',
-   '2) One new word I learned:  ____________',
-   '3) Draw your favourite part, then write about it.'],write:1,ungraded:true});
+ blocks.push({h:nextLetter()+'. About my book — “'+book+'”',items:P(MIRAYAH_BOOK_PROMPTS),write:1,ungraded:true});
  // B sight words
  // Rung 0 ('Sight words') has neither rhyme nor mini set, so Block B is the ONLY graded
  // content on that rung (Block A is the ungraded "about my book" prompt) — MTOTAL was
